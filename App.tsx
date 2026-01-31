@@ -15,7 +15,8 @@ import {
   School, 
   ListOrdered, 
   MessageSquareText,
-  Sparkles
+  Sparkles,
+  AlertTriangle
 } from 'lucide-react';
 
 const LOADING_STEPS = [
@@ -60,7 +61,7 @@ const App: React.FC = () => {
 
   const handleGenerate = async () => {
     if (!nombreDocente || !nombreEscuela) {
-      setError("Por favor completa los datos del docente y la escuela.");
+      setError("DATO FALTANTE: El nombre del docente y de la escuela son obligatorios.");
       return;
     }
 
@@ -197,21 +198,23 @@ const App: React.FC = () => {
             </div>
             <div className="space-y-3">
               <textarea 
-                placeholder="Ej: Problemas de basura en la comunidad, falta de hábitos de higiene, necesidades de lectoescritura..."
+                placeholder="Ej: Problemas de basura en la comunidad..."
                 value={contexto}
                 onChange={e => setContexto(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10 h-44 resize-none leading-relaxed text-slate-700 placeholder:text-slate-400 font-medium"
               />
-              <div className="flex items-center gap-2 px-1 text-[10px] text-brand-400 font-bold uppercase tracking-widest">
-                <Sparkles className="w-3 h-3" /> IA Lista para contextualizar
-              </div>
             </div>
           </section>
 
           {error && (
-            <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-xs font-bold flex gap-3 animate-in fade-in slide-in-from-top-2">
-              <XCircle className="w-5 h-5 shrink-0 mt-0.5" /> 
-              <span>{error}</span>
+            <div className="p-4 bg-red-50 border-2 border-red-200 rounded-2xl text-red-700 text-[11px] font-bold flex flex-col gap-2 animate-in fade-in slide-in-from-top-4">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span className="uppercase tracking-wider">Error de Sistema</span>
+              </div>
+              <p className="bg-white/50 p-2 rounded-lg border border-red-100 leading-relaxed">
+                {error}
+              </p>
             </div>
           )}
         </div>
@@ -223,7 +226,7 @@ const App: React.FC = () => {
             className="w-full bg-gradient-brand hover:scale-[1.02] text-white font-black py-4 rounded-2xl shadow-xl shadow-brand-200 transition-all active:scale-95 disabled:bg-slate-300 disabled:shadow-none flex items-center justify-center gap-3 tracking-widest text-sm"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 fill-current" />}
-            {loading ? 'PROCESANDO...' : 'GENERAR PROYECTO'}
+            {loading ? 'GENERANDO...' : 'GENERAR PROYECTO'}
           </button>
         </div>
       </aside>
@@ -237,7 +240,7 @@ const App: React.FC = () => {
             </div>
             <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-4">Lienzo Pedagógico</h2>
             <p className="text-slate-500 max-w-md leading-relaxed font-bold text-lg">
-              Tu planeación de codiseño aparecerá aquí con toda la estructura oficial de la NEM.
+              Tu planeación de codiseño aparecerá aquí tras configurar tu API KEY y completar los datos.
             </p>
           </div>
         )}

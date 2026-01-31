@@ -40,9 +40,7 @@ import {
   WidthType, 
   HeadingLevel, 
   AlignmentType, 
-  ShadingType,
-  VerticalAlign,
-  BorderStyle
+  ShadingType
 } from 'docx';
 
 interface Props {
@@ -121,7 +119,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
             ...safeArray(plan.vinculacion_contenido_pda).flatMap(v => [
               new Paragraph({ children: [new TextRun({ text: `Campo/Asignatura: ${v.asignatura}`, bold: true })], spacing: { before: 100 } }),
               new Paragraph({ children: [new TextRun({ text: `Contenido: ${v.contenido}`, italics: true })] }),
-              ...safeArray(v.pda_vinculados).map(p => new Paragraph({ text: `• ${p}`, spacing: { left: 400 } })),
+              ...safeArray(v.pda_vinculados).map(p => new Paragraph({ text: `• ${p}`, indent: { left: 400 } })),
             ]),
 
             // SECUENCIA DIDÁCTICA DETALLADA
@@ -132,7 +130,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
                 heading: HeadingLevel.HEADING_3,
                 spacing: { before: 200, after: 100 }
               }),
-              new Paragraph({ text: safeStr(fase.descripcion), italics: true, spacing: { after: 150 } }),
+              new Paragraph({ children: [new TextRun({ text: safeStr(fase.descripcion), italics: true })], spacing: { after: 150 } }),
               ...safeArray(fase.sesiones).map(s => new Table({
                 width: { size: 100, type: WidthType.PERCENTAGE },
                 rows: [
@@ -148,19 +146,19 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
                   new TableRow({
                     children: [
                       new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Inicio", bold: true })] })], width: { size: 25, type: WidthType.PERCENTAGE } }),
-                      new TableCell({ children: safeArray(s.actividades_inicio).map(a => new Paragraph({ text: `• ${a}`, spacing: { after: 50 } })) })
+                      new TableCell({ children: safeArray(s.actividades_inicio).map(a => new Paragraph({ text: `• ${a}` })) })
                     ]
                   }),
                   new TableRow({
                     children: [
                       new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Desarrollo", bold: true })] })] }),
-                      new TableCell({ children: safeArray(s.actividades_desarrollo).map(a => new Paragraph({ text: `• ${a}`, spacing: { after: 50 } })) })
+                      new TableCell({ children: safeArray(s.actividades_desarrollo).map(a => new Paragraph({ text: `• ${a}` })) })
                     ]
                   }),
                   new TableRow({
                     children: [
                       new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Cierre", bold: true })] })] }),
-                      new TableCell({ children: safeArray(s.actividades_cierre).map(a => new Paragraph({ text: `• ${a}`, spacing: { after: 50 } })) })
+                      new TableCell({ children: safeArray(s.actividades_cierre).map(a => new Paragraph({ text: `• ${a}` })) })
                     ]
                   }),
                   new TableRow({
@@ -174,8 +172,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
                       })
                     ]
                   })
-                ],
-                spacing: { after: 200 }
+                ]
               }))
             ]),
 
@@ -267,9 +264,9 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
       autoTable(doc, {
         startY: currentY,
         head: [['DIAGNÓSTICO SOCIOEDUCATIVO']],
-        body: [[safeStr(plan.diagnostico_socioeducativo)]],
+        body: [[safeStr(plan.diagnostico_socioeducativo)]] as any,
         theme: 'plain',
-        headStyles: { fontStyle: 'bold', textColor: primaryColor, fontSize: 10, cellPadding: { bottom: 2 } },
+        headStyles: { fontStyle: 'bold', textColor: primaryColor as any, fontSize: 10, cellPadding: { bottom: 2 } },
         styles: { fontSize: 8.5, cellPadding: 1, overflow: 'linebreak' },
         margin: { left: margin, right: margin }
       });
@@ -283,9 +280,9 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
           ['CAMPOS FORMATIVOS', safeArray(plan.campo_formativo).join(', ')],
           ['EJES ARTICULADORES', safeArray(plan.ejes_articuladores).join(', ')],
           ['PROPÓSITO', safeStr(plan.proposito)]
-        ],
+        ] as any,
         theme: 'grid',
-        headStyles: { fillColor: primaryColor, fontSize: 9 },
+        headStyles: { fillColor: primaryColor as any, fontSize: 9 },
         styles: { fontSize: 8, cellPadding: 3 },
         columnStyles: { 0: { cellWidth: 40, fontStyle: 'bold', fillColor: [249, 250, 251] } },
         margin: { left: margin, right: margin }
@@ -299,9 +296,9 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
         body: safeArray(plan.vinculacion_contenido_pda).map(v => [
           v.asignatura,
           `${v.contenido}\n\nPDA:\n${safeArray(v.pda_vinculados).map(p => '• ' + p).join('\n')}`
-        ]),
+        ]) as any,
         theme: 'grid',
-        headStyles: { fillColor: secondaryColor, fontSize: 9 },
+        headStyles: { fillColor: secondaryColor as any, fontSize: 9 },
         styles: { fontSize: 8, overflow: 'linebreak', cellPadding: 4 },
         columnStyles: { 0: { cellWidth: 35, fontStyle: 'bold' } },
         margin: { left: margin, right: margin }
@@ -314,7 +311,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
         
         autoTable(doc, {
           startY: currentY,
-          body: [[{ content: `${fIdx + 1}. ${safeStr(fase.nombre).toUpperCase()}`, styles: { fontStyle: 'bold', fillColor: [238, 242, 255], textColor: primaryColor, fontSize: 10 } }]],
+          body: [[{ content: `${fIdx + 1}. ${safeStr(fase.nombre).toUpperCase()}`, styles: { fontStyle: 'bold', fillColor: [238, 242, 255], textColor: primaryColor as any, fontSize: 10 } }]] as any,
           theme: 'plain',
           margin: { left: margin, right: margin }
         });
@@ -328,7 +325,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
         autoTable(doc, {
           startY: currentY,
           head: [['SESIÓN', 'PLAN DE CLASE DETALLADO']],
-          body: sessionRows,
+          body: sessionRows as any,
           theme: 'grid',
           headStyles: { fillColor: [71, 85, 105], fontSize: 8 },
           styles: { fontSize: 7.5, overflow: 'linebreak', cellPadding: 3 },
@@ -348,7 +345,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
           [{ content: `TÉCNICAS: ${safeArray(plan.evaluacion_formativa?.tecnicas).join(', ')}`, styles: { fontStyle: 'bold' } }],
           [{ content: `INSTRUMENTOS: ${safeArray(plan.evaluacion_formativa?.instrumentos).join(', ')}`, styles: { fontStyle: 'bold' } }],
           [`CRITERIOS:\n${safeArray(plan.evaluacion_formativa?.criterios_evaluacion).map(c => '• ' + c).join('\n')}`]
-        ],
+        ] as any,
         theme: 'grid',
         headStyles: { fillColor: [15, 23, 42], fontSize: 10 },
         styles: { fontSize: 8, cellPadding: 4 },
@@ -362,15 +359,15 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
         autoTable(doc, {
           startY: currentY,
           head: [['ACERVO BIBLIOGRÁFICO']],
-          body: safeArray(plan.bibliografia_especializada).map(b => [`${b.autor} (${b.año}). ${b.titulo}. Uso: ${b.uso}`]),
+          body: safeArray(plan.bibliografia_especializada).map(b => [`${b.autor} (${b.año}). ${b.titulo}. Uso: ${b.uso}`]) as any,
           theme: 'plain',
-          headStyles: { textColor: primaryColor, fontStyle: 'bold', fontSize: 9 },
+          headStyles: { textColor: primaryColor as any, fontStyle: 'bold', fontSize: 9 },
           styles: { fontSize: 7.5, cellPadding: 1 },
           margin: { left: margin, right: margin }
         });
       }
 
-      const totalPages = doc.internal.getNumberOfPages();
+      const totalPages = (doc as any).internal.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
         doc.setFontSize(8);

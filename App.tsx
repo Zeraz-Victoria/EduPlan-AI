@@ -16,7 +16,14 @@ import {
   MessageSquareText,
   AlertTriangle,
   Menu,
-  X
+  X,
+  Sparkles,
+  Command,
+  ChevronRight,
+  Plus,
+  Settings2,
+  // Added User icon import
+  User
 } from 'lucide-react';
 
 const LOADING_STEPS = [
@@ -69,7 +76,7 @@ const App: React.FC = () => {
     setLoading(true);
     setError(null);
     setLessonPlan(null);
-    setIsSidebarOpen(false); // Cerrar sidebar en móvil al generar
+    setIsSidebarOpen(false);
 
     try {
       const result = await generateLessonPlanStream(
@@ -96,199 +103,267 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#f8fafc] overflow-hidden font-sans relative">
-      {/* Botón de Menú Móvil */}
-      <div className="lg:hidden fixed top-4 left-4 z-[60]">
+    <div className="flex h-screen overflow-hidden font-sans relative mesh-gradient">
+      {/* Mobile Control Bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 glass-morphism z-[60] flex items-center px-4 border-b border-white/20">
         <button 
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="bg-brand-600 text-white p-3 rounded-2xl shadow-xl hover:bg-brand-700 transition-all active:scale-95"
+          className="bg-brand-600 text-white p-2.5 rounded-xl shadow-lg hover:bg-brand-700 transition-all"
         >
-          {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
+        <div className="ml-4 flex items-center gap-2">
+          <div className="bg-brand-600 p-1.5 rounded-lg text-white">
+            <GraduationCap size={16} />
+          </div>
+          <span className="font-display font-bold text-slate-900">EduPlanAI</span>
+        </div>
       </div>
 
-      {/* Overlay para móvil */}
+      {/* Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[50] transition-opacity"
+          className="lg:hidden fixed inset-0 bg-brand-950/20 backdrop-blur-sm z-[50]"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar Responsivo */}
+      {/* Modern Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-[55] w-[85%] sm:w-[380px] bg-white border-r border-slate-200 flex flex-col shadow-2xl transition-transform duration-300 lg:static lg:translate-x-0
+        fixed inset-y-0 left-0 z-[55] w-[85%] sm:w-[400px] bg-white lg:bg-white/80 lg:backdrop-blur-xl border-r border-slate-200/60 flex flex-col shadow-premium transition-transform duration-500 lg:static lg:translate-x-0
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="p-6 sm:p-8 border-b border-slate-100 bg-white relative overflow-hidden shrink-0">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
-          <div className="relative z-10 flex items-center gap-3 mb-1">
-            <div className="bg-gradient-brand p-2.5 rounded-xl text-white shadow-lg shadow-brand-200">
-              <GraduationCap className="w-6 h-6" />
+        {/* Sidebar Header */}
+        <div className="p-8 pb-4 shrink-0">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="bg-gradient-brand p-2.5 rounded-2xl text-white shadow-brand-500/20 shadow-xl">
+              <Sparkles className="w-6 h-6" />
             </div>
-            <h1 className="font-extrabold text-xl text-slate-900 tracking-tight">EduPlanAI</h1>
+            <div>
+              <h1 className="font-display font-extrabold text-2xl text-slate-900 leading-none">EduPlanAI</h1>
+              <p className="text-[10px] font-bold text-brand-600/60 uppercase tracking-widest mt-1">NEM Intelligence</p>
+            </div>
           </div>
-          <p className="relative z-10 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] pl-1">Codiseño Inteligente</p>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-5 sm:p-6 space-y-8 sm:space-y-10">
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 px-1">
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-                <School className="w-4 h-4 text-emerald-600" />
-              </div>
-              <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Institución</h3>
+        {/* Form Content */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-8 py-6 space-y-10">
+          {/* Section: Docente */}
+          <section className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                <Command size={14} className="text-brand-500" />
+                Información Base
+              </h3>
             </div>
-            <div className="space-y-3">
-              <input 
-                type="text" 
-                placeholder="Nombre de la escuela" 
-                value={nombreEscuela}
-                onChange={e => setNombreEscuela(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
-              />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <input 
-                  type="text" 
-                  placeholder="CCT" 
-                  value={cct}
-                  onChange={e => setCct(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10"
-                />
-                <input 
-                  type="text" 
-                  placeholder="Zona" 
-                  value={zonaEscolar}
-                  onChange={e => setZonaEscolar(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10"
-                />
+            
+            <div className="space-y-4">
+              <div className="group">
+                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1.5 block transition-colors group-focus-within:text-brand-600">Docente responsable</label>
+                <div className="relative">
+                  <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-brand-600 transition-colors" />
+                  <input 
+                    type="text" 
+                    placeholder="Nombre Completo" 
+                    value={nombreDocente}
+                    onChange={e => setNombreDocente(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl pl-11 pr-4 py-3.5 text-sm outline-none focus:bg-white focus:ring-4 focus:ring-brand-500/5 focus:border-brand-500 transition-all font-medium text-slate-700 shadow-sm"
+                  />
+                </div>
               </div>
-              <input 
-                type="text" 
-                placeholder="Nombre del Docente" 
-                value={nombreDocente}
-                onChange={e => setNombreDocente(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10 font-semibold"
-              />
-            </div>
-          </section>
 
-          <section className="space-y-4">
-             <div className="flex items-center gap-2 px-1">
-              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
-                <Layers className="w-4 h-4 text-amber-600" />
+              <div className="group">
+                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1.5 block group-focus-within:text-brand-600">Institución Educativa</label>
+                <div className="relative">
+                  <School size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-brand-600 transition-colors" />
+                  <input 
+                    type="text" 
+                    placeholder="Nombre de la Escuela" 
+                    value={nombreEscuela}
+                    onChange={e => setNombreEscuela(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl pl-11 pr-4 py-3.5 text-sm outline-none focus:bg-white focus:ring-4 focus:ring-brand-500/5 focus:border-brand-500 transition-all font-medium text-slate-700 shadow-sm"
+                  />
+                </div>
               </div>
-              <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Estructura</h3>
-            </div>
-            <div className="space-y-3">
-              <select 
-                value={grado} 
-                onChange={e => handleGradoChange(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10 font-medium text-slate-700 cursor-pointer"
-              >
-                {FASES_NEM.map(f => (
-                  <optgroup key={f.id} label={f.nombre}>
-                    {f.grados.map(g => <option key={g} value={g}>{g}</option>)}
-                  </optgroup>
-                ))}
-              </select>
-              <select 
-                value={metodologia} 
-                onChange={e => setMetodologia(e.target.value as Methodology)}
-                className="w-full bg-brand-50 border-2 border-brand-100 rounded-xl px-4 py-3 text-sm outline-none text-brand-700 font-bold cursor-pointer"
-              >
-                {METODOLOGIAS.map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
-              <div className="flex items-center justify-between px-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                <span className="text-xs font-bold text-slate-500 flex items-center gap-2">
-                   <ListOrdered className="w-3.5 h-3.5" /> Sesiones:
-                </span>
-                <input 
-                  type="number" 
-                  value={numSesiones} 
-                  onChange={e => setNumSesiones(parseInt(e.target.value) || 1)}
-                  className="w-16 bg-white border border-slate-200 rounded-lg px-2 py-1 text-center text-sm font-black text-brand-600"
-                />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="group">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1.5 block">CCT</label>
+                  <input 
+                    type="text" 
+                    placeholder="Clave" 
+                    value={cct}
+                    onChange={e => setCct(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3.5 text-sm outline-none focus:bg-white focus:ring-4 focus:ring-brand-500/5 focus:border-brand-500 transition-all font-medium text-slate-700 shadow-sm"
+                  />
+                </div>
+                <div className="group">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1.5 block">Zona</label>
+                  <input 
+                    type="text" 
+                    placeholder="Número" 
+                    value={zonaEscolar}
+                    onChange={e => setZonaEscolar(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3.5 text-sm outline-none focus:bg-white focus:ring-4 focus:ring-brand-500/5 focus:border-brand-500 transition-all font-medium text-slate-700 shadow-sm"
+                  />
+                </div>
               </div>
             </div>
           </section>
 
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 px-1">
-              <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
-                <MessageSquareText className="w-4 h-4 text-indigo-600" />
+          {/* Section: Configuración Didáctica */}
+          <section className="space-y-6">
+            <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+              <Settings2 size={14} className="text-violet-500" />
+              Parámetros Didácticos
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="group">
+                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1.5 block">Grado Escolar</label>
+                <div className="relative">
+                  <select 
+                    value={grado} 
+                    onChange={e => handleGradoChange(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3.5 text-sm outline-none focus:bg-white focus:ring-4 focus:ring-brand-500/5 appearance-none font-bold text-slate-700 cursor-pointer shadow-sm"
+                  >
+                    {FASES_NEM.map(f => (
+                      <optgroup key={f.id} label={f.nombre}>
+                        {f.grados.map(g => <option key={g} value={g}>{g}</option>)}
+                      </optgroup>
+                    ))}
+                  </select>
+                  <ChevronRight size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none rotate-90" />
+                </div>
               </div>
-              <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Diagnóstico Situacional</h3>
+
+              <div className="group">
+                <label className="text-[10px] font-bold text-slate-500 uppercase ml-1 mb-1.5 block">Metodología Sugerida</label>
+                <div className="relative">
+                  <select 
+                    value={metodologia} 
+                    onChange={e => setMetodologia(e.target.value as Methodology)}
+                    className="w-full bg-violet-50/30 border border-violet-100 rounded-2xl px-4 py-3.5 text-sm outline-none text-violet-700 font-bold cursor-pointer hover:bg-violet-50 transition-colors shadow-sm"
+                  >
+                    {METODOLOGIAS.map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between px-5 py-4 bg-emerald-50/30 rounded-2xl border border-emerald-100/50 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <ListOrdered className="w-4 h-4 text-emerald-600" />
+                  <span className="text-[10px] font-black text-emerald-600 uppercase tracking-wider">Duración Total</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="number" 
+                    value={numSesiones} 
+                    onChange={e => setNumSesiones(parseInt(e.target.value) || 1)}
+                    className="w-12 bg-white border border-emerald-200 rounded-xl px-2 py-1 text-center text-sm font-black text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                  <span className="text-[10px] font-bold text-emerald-500/80 uppercase">Sesiones</span>
+                </div>
+              </div>
             </div>
-            <div className="space-y-3 pb-4">
+          </section>
+
+          {/* Section: Contexto */}
+          <section className="space-y-6">
+            <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+              <MessageSquareText size={14} className="text-amber-500" />
+              Diagnóstico Local
+            </h3>
+            <div className="relative">
               <textarea 
-                placeholder="Ej: Problemas de basura en la comunidad..."
+                placeholder="Describe la problemática, intereses o necesidades detectadas en el aula o comunidad..."
                 value={contexto}
                 onChange={e => setContexto(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10 h-40 sm:h-44 resize-none leading-relaxed text-slate-700 font-medium"
+                className="w-full bg-slate-50 border border-slate-200/80 rounded-3xl px-6 py-5 text-sm outline-none focus:bg-white focus:ring-4 focus:ring-brand-500/5 h-44 resize-none leading-relaxed text-slate-700 font-medium shadow-sm placeholder:text-slate-400"
               />
+              <div className="absolute bottom-4 right-4 bg-white/80 backdrop-blur px-2 py-1 rounded-lg border border-slate-100 text-[9px] font-black text-slate-400">CONTEXTO</div>
             </div>
           </section>
 
           {error && (
-            <div className="p-4 bg-red-50 border-2 border-red-200 rounded-2xl text-red-700 text-[11px] font-bold flex flex-col gap-2 animate-in fade-in slide-in-from-top-4">
-              <div className="flex items-center gap-2 text-red-800">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span className="uppercase tracking-wider">Error de Sistema</span>
+            <div className="p-5 bg-rose-50 border border-rose-100 rounded-3xl animate-in slide-in-from-top-4">
+              <div className="flex items-center gap-2 text-rose-600 mb-1">
+                <AlertTriangle className="w-4 h-4" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Error de Configuración</span>
               </div>
-              <p className="bg-white/50 p-2 rounded-lg border border-red-100 leading-relaxed">
+              <p className="text-[11px] text-rose-500 leading-relaxed font-bold">
                 {error}
               </p>
             </div>
           )}
         </div>
 
-        <div className="p-5 sm:p-6 bg-slate-50 border-t border-slate-200 shrink-0">
+        {/* Action Button */}
+        <div className="p-8 bg-white lg:bg-transparent border-t lg:border-t-0 border-slate-100 shrink-0">
           <button 
             onClick={handleGenerate}
             disabled={loading}
-            className="w-full bg-gradient-brand hover:scale-[1.02] text-white font-black py-4 rounded-2xl shadow-xl shadow-brand-200 transition-all active:scale-95 disabled:bg-slate-300 disabled:shadow-none flex items-center justify-center gap-3 tracking-widest text-sm"
+            className="w-full bg-gradient-brand hover:shadow-brand-500/40 hover:scale-[1.02] text-white font-black py-4.5 rounded-[1.8rem] shadow-2xl shadow-brand-500/20 transition-all active:scale-95 disabled:grayscale disabled:opacity-50 flex items-center justify-center gap-3 tracking-[0.15em] text-xs"
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 fill-current" />}
-            {loading ? 'GENERANDO...' : 'GENERAR PROYECTO'}
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 fill-white" />}
+            {loading ? 'SINTETIZANDO...' : 'GENERAR LIENZO DIDÁCTICO'}
           </button>
         </div>
       </aside>
 
-      {/* Main Content Responsivo */}
-      <main className="flex-1 bg-[#fcfcfd] relative overflow-y-auto custom-scrollbar">
+      {/* Modern Main Content */}
+      <main className="flex-1 bg-transparent relative overflow-y-auto custom-scrollbar p-6 lg:p-12 mt-16 lg:mt-0">
         {!lessonPlan && !loading && (
-          <div className="min-h-full flex flex-col items-center justify-center text-center p-6 sm:p-10 lg:p-20 animate-in fade-in zoom-in-95">
-            <div className="w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-[1.8rem] sm:rounded-[2rem] flex items-center justify-center mb-8 sm:mb-10 shadow-2xl shadow-slate-200 relative">
-               <div className="absolute inset-0 bg-brand-50 rounded-[1.8rem] sm:rounded-[2rem] animate-pulse"></div>
-               <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 text-brand-500 relative z-10" />
+          <div className="h-full flex flex-col items-center justify-center text-center max-w-2xl mx-auto animate-in fade-in duration-1000">
+            <div className="relative mb-12 animate-float">
+              <div className="absolute -inset-8 bg-brand-500/5 blur-[100px] rounded-full"></div>
+              <div className="w-32 h-32 sm:w-40 sm:h-40 bg-white rounded-[3rem] flex items-center justify-center shadow-premium relative z-10 border border-white/50">
+                 <BookOpen className="w-14 h-14 sm:w-16 sm:h-16 text-brand-600 opacity-20 absolute rotate-12 -right-2" />
+                 <Sparkles className="w-16 h-16 sm:w-20 sm:h-20 text-brand-500" />
+              </div>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-4">Lienzo Pedagógico</h2>
-            <p className="text-slate-500 max-w-md leading-relaxed font-bold text-base sm:text-lg">
-              Configura los datos en el menú lateral para generar tu plano didáctico personalizado.
+            <h2 className="text-4xl sm:text-5xl font-display font-black text-slate-900 tracking-tight mb-6">El futuro de tu codiseño empieza aquí.</h2>
+            <p className="text-slate-500 font-medium text-lg leading-relaxed mb-10">
+              Personaliza los parámetros en el panel lateral y deja que nuestra inteligencia pedagógica estructure tu planeación alineada a la Nueva Escuela Mexicana.
             </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-slate-200/60 shadow-sm">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">IA Generativa Lista</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-slate-200/60 shadow-sm">
+                <Command size={14} className="text-brand-500" />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Plan 2022 Integrado</span>
+              </div>
+            </div>
           </div>
         )}
 
         {loading && (
-          <div className="min-h-full flex flex-col items-center justify-center p-6 sm:p-10 lg:p-20 bg-white">
-            <div className="relative mb-10 sm:mb-14">
-              <div className="w-24 h-24 sm:w-32 sm:h-32 border-[4px] border-slate-100 border-t-brand-600 rounded-full animate-spin shadow-inner"></div>
+          <div className="h-full flex flex-col items-center justify-center p-6 lg:p-20">
+            <div className="relative mb-16">
+              <div className="w-32 h-32 sm:w-48 sm:h-48 rounded-full border-4 border-slate-100 border-t-brand-600 animate-spin"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                 <div className="w-12 h-12 sm:w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center animate-pulse shadow-sm">
-                   <Brain className="w-6 h-6 sm:w-8 sm:h-8 text-brand-600" />
+                 <div className="w-16 h-16 sm:w-24 sm:h-24 bg-white rounded-[2rem] flex items-center justify-center shadow-premium border border-slate-50">
+                   <Brain className="w-10 h-10 sm:w-14 sm:h-14 text-brand-600 animate-pulse" />
                  </div>
               </div>
+              <div className="absolute -top-4 -right-4 bg-brand-600 text-white p-2 rounded-xl shadow-lg animate-float">
+                <Zap size={20} />
+              </div>
             </div>
-            <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-3 tracking-tight text-center">Arquitectura Pedagógica NEM</h3>
-            <p className="text-brand-600 text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] animate-pulse text-center">
-              {LOADING_STEPS[loadingStep]}
-            </p>
+            <h3 className="text-2xl sm:text-3xl font-display font-black text-slate-900 mb-4 tracking-tight text-center">Arquitectura de Aprendizaje</h3>
+            <div className="bg-white/50 backdrop-blur-sm px-6 py-3 rounded-2xl border border-white/60 shadow-sm flex items-center gap-3">
+              <Loader2 className="w-4 h-4 text-brand-600 animate-spin" />
+              <p className="text-brand-700 text-[11px] font-black uppercase tracking-[0.25em]">
+                {LOADING_STEPS[loadingStep]}
+              </p>
+            </div>
           </div>
         )}
 
         {lessonPlan && (
-          <div className="p-4 sm:p-8 lg:p-16 animate-in slide-in-from-bottom-8 fade-in duration-1000">
+          <div className="max-w-5xl mx-auto pb-20 animate-in slide-in-from-bottom-12 duration-700">
             <LessonPlanPreview plan={lessonPlan} />
           </div>
         )}

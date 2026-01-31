@@ -17,14 +17,15 @@ export const generateLessonPlanStream = async (
     const ai = new GoogleGenAI({ apiKey });
     
     const systemInstruction = `
-      Eres un Doctor en Pedagogía y Especialista en el Plan de Estudio 2022 (NEM, México).
-      Diseña una "Planeación de Codiseño (Plano Didáctico)" de excelencia técnica y pedagógica.
-      Debes ser extremadamente preciso con la vinculación de contenidos y PDA.
-      Responde EXCLUSIVAMENTE con el objeto JSON solicitado, respetando estrictamente los nombres de las propiedades.
+      Eres un Doctor en Pedagogía y Especialista de alto nivel en el Plan de Estudio 2022 de la Nueva Escuela Mexicana (NEM).
+      Tu tarea es diseñar un "Plano Didáctico" de excelencia.
+      REQUISITO CRÍTICO: Debes incluir CONTENIDOS y PDA (Procesos de Desarrollo de Aprendizaje) REALES y VIGENTES de los Programas Sintéticos de la SEP para la ${params.fase} y el grado ${params.grado}.
+      No inventes los PDA; deben ser coherentes con la estructura curricular oficial.
+      Responde EXCLUSIVAMENTE con el objeto JSON solicitado.
     `;
 
     const prompt = `
-      Genera una planeación didáctica completa con los siguientes datos:
+      Genera una planeación didáctica profesional con los siguientes datos:
       - Grado: ${params.grado}
       - Fase: ${params.fase}
       - Metodología: ${params.metodologia}
@@ -33,9 +34,12 @@ export const generateLessonPlanStream = async (
       - Escuela: ${params.nombreEscuela}
       - Docente: ${params.nombreDocente}
 
-      ESTRUCTURA JSON OBLIGATORIA (Usa exactamente estas llaves):
+      INSTRUCCIONES PARA VINCULACIÓN CURRICULAR:
+      En la propiedad "vinculacion_contenido_pda", selecciona al menos 2 contenidos y sus respectivos PDA que se relacionen directamente con la problemática planteada y la metodología seleccionada. Asegúrate de que los PDA sean observables y evaluables.
+
+      ESTRUCTURA JSON OBLIGATORIA:
       {
-        "titulo_proyecto": "Título creativo",
+        "titulo_proyecto": "Título creativo y pedagógico",
         "nombre_docente": "${params.nombreDocente}",
         "nombre_escuela": "${params.nombreEscuela}",
         "cct": "${params.cct || ''}",
@@ -43,37 +47,43 @@ export const generateLessonPlanStream = async (
         "grado": "${params.grado}",
         "fase_nem": "${params.fase}",
         "metodologia": "${params.metodologia}",
-        "campo_formativo": ["Campo 1", "Campo 2"],
-        "ejes_articuladores": ["Eje 1", "Eje 2"],
-        "proposito": "Propósito general del proyecto",
-        "diagnostico_socioeducativo": "Análisis del contexto",
-        "temporalidad_realista": "Duración estimada",
-        "vinculacion_contenido_pda": [{ "asignatura": "...", "contenido": "...", "pda_vinculados": ["..."] }],
+        "campo_formativo": ["Indica los campos formativos involucrados"],
+        "ejes_articuladores": ["Indica los ejes articuladores que se movilizan"],
+        "proposito": "Propósito general del proyecto de acuerdo a la NEM",
+        "diagnostico_socioeducativo": "Análisis basado en el contexto proporcionado",
+        "temporalidad_realista": "Ej. 2 semanas / ${params.numSesiones} sesiones",
+        "vinculacion_contenido_pda": [
+          { 
+            "asignatura": "Asignatura/Disciplina vinculada", 
+            "contenido": "Nombre del contenido del programa sintético", 
+            "pda_vinculados": ["PDA 1 del programa", "PDA 2 del programa"] 
+          }
+        ],
         "fases_desarrollo": [
           { 
-            "nombre": "Nombre de la Fase", 
-            "descripcion": "Descripción breve", 
+            "nombre": "Nombre de la fase según la metodología", 
+            "descripcion": "Enfoque de esta etapa", 
             "sesiones": [
               { 
                 "numero": 1, 
-                "titulo": "Título Sesión", 
-                "duracion": "50 min", 
-                "actividades_inicio": ["..."], 
-                "actividades_desarrollo": ["..."], 
-                "actividades_cierre": ["..."], 
-                "recursos": ["..."], 
-                "evaluacion_sesion": "..." 
+                "titulo": "Título de la sesión", 
+                "duracion": "50-60 min", 
+                "actividades_inicio": ["Actividades de enganche/recuperación"], 
+                "actividades_desarrollo": ["Actividades de construcción/acción"], 
+                "actividades_cierre": ["Actividades de síntesis/evaluación"], 
+                "recursos": ["Materiales específicos"], 
+                "evaluacion_sesion": "Criterio de éxito de la sesión" 
               }
             ] 
           }
         ],
         "evaluacion_formativa": { 
-          "tecnicas": ["..."], 
-          "instrumentos": ["..."], 
-          "criterios_evaluacion": ["..."] 
+          "tecnicas": ["Técnica 1", "Técnica 2"], 
+          "instrumentos": ["Instrumento 1", "Instrumento 2"], 
+          "criterios_evaluacion": ["Criterio 1", "Criterio 2"] 
         },
         "bibliografia_especializada": [
-          { "autor": "Nombre Autor", "titulo": "Título Libro/Art", "año": "2024", "uso": "Para qué sirve en el proyecto" }
+          { "autor": "Nombre Autor", "titulo": "Título Obra", "año": "2024", "uso": "Justificación de uso" }
         ]
       }
     `;
@@ -84,7 +94,7 @@ export const generateLessonPlanStream = async (
       config: { 
         systemInstruction, 
         responseMimeType: "application/json",
-        temperature: 0.3
+        temperature: 0.2
       }
     });
 
@@ -97,26 +107,10 @@ export const generateLessonPlanStream = async (
     const cleanJson = fullText.substring(firstBrace, lastBrace + 1);
     const parsed = JSON.parse(cleanJson);
 
-    // Validación mínima para evitar undefineds comunes
-    if (parsed.bibliografia_especializada) {
-      parsed.bibliografia_especializada = parsed.bibliografia_especializada.map((b: any) => ({
-        autor: b.autor || b.author || "Anónimo",
-        titulo: b.titulo || b.title || "Sin título",
-        año: b.año || b.year || "S/F",
-        uso: b.uso || b.use || "Referencia general"
-      }));
-    }
-
     return parsed as LessonPlan;
 
   } catch (error: any) {
     console.error("Detalle técnico del error:", error);
-    if (error.message?.includes("API_KEY_INVALID")) {
-      throw new Error("LA API KEY ES INCORRECTA: La clave no es válida.");
-    }
-    if (error.message?.includes("429")) {
-      throw new Error("CUOTA EXCEDIDA: Espera 60 segundos.");
-    }
     throw new Error(`ERROR DE GENERACIÓN: ${error.message.substring(0, 100)}`);
   }
 };

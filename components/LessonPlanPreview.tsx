@@ -70,7 +70,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
             }),
             new Paragraph({
               children: [
-                new TextRun({ text: `Fase: ${safeStr(plan.fase_nem)} | Metodología: ${safeStr(plan.metodologia)}`, italic: true }),
+                new TextRun({ text: `Fase: ${safeStr(plan.fase_nem)} | Metodología: ${safeStr(plan.metodologia)}`, italics: true }),
               ],
               alignment: AlignmentType.CENTER,
               spacing: { after: 400 },
@@ -86,19 +86,28 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
               rows: [
                 new TableRow({
                   children: [
-                    new TableCell({ children: [new Paragraph({ text: "CAMPO FORMATIVO", bold: true })], shading: { fill: "F1F5F9", type: ShadingType.CLEAR } }),
+                    new TableCell({ 
+                      children: [new Paragraph({ children: [new TextRun({ text: "CAMPO FORMATIVO", bold: true })] })], 
+                      shading: { fill: "F1F5F9", type: ShadingType.CLEAR } 
+                    }),
                     new TableCell({ children: [new Paragraph({ text: safeArray(plan.campo_formativo).join(", ") })] }),
                   ],
                 }),
                 new TableRow({
                   children: [
-                    new TableCell({ children: [new Paragraph({ text: "EJES ARTICULADORES", bold: true })], shading: { fill: "F1F5F9", type: ShadingType.CLEAR } }),
+                    new TableCell({ 
+                      children: [new Paragraph({ children: [new TextRun({ text: "EJES ARTICULADORES", bold: true })] })], 
+                      shading: { fill: "F1F5F9", type: ShadingType.CLEAR } 
+                    }),
                     new TableCell({ children: [new Paragraph({ text: safeArray(plan.ejes_articuladores).join(", ") })] }),
                   ],
                 }),
                 new TableRow({
                   children: [
-                    new TableCell({ children: [new Paragraph({ text: "PROPÓSITO", bold: true })], shading: { fill: "F1F5F9", type: ShadingType.CLEAR } }),
+                    new TableCell({ 
+                      children: [new Paragraph({ children: [new TextRun({ text: "PROPÓSITO", bold: true })] })], 
+                      shading: { fill: "F1F5F9", type: ShadingType.CLEAR } 
+                    }),
                     new TableCell({ children: [new Paragraph({ text: safeStr(plan.proposito) })] }),
                   ],
                 }),
@@ -120,15 +129,23 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
                 rows: [
                   new TableRow({
                     children: [
-                      new TableCell({ children: [new Paragraph({ text: "Sesión", bold: true, alignment: AlignmentType.CENTER })], width: { size: 10, type: WidthType.PERCENTAGE }, shading: { fill: "334155", type: ShadingType.CLEAR } }),
-                      new TableCell({ children: [new Paragraph({ text: "Actividades", bold: true })], width: { size: 90, type: WidthType.PERCENTAGE }, shading: { fill: "334155", type: ShadingType.CLEAR } }),
+                      new TableCell({ 
+                        children: [new Paragraph({ children: [new TextRun({ text: "Sesión", bold: true, color: "FFFFFF" })], alignment: AlignmentType.CENTER })], 
+                        width: { size: 10, type: WidthType.PERCENTAGE }, 
+                        shading: { fill: "334155", type: ShadingType.CLEAR } 
+                      }),
+                      new TableCell({ 
+                        children: [new Paragraph({ children: [new TextRun({ text: "Actividades", bold: true, color: "FFFFFF" })] })], 
+                        width: { size: 90, type: WidthType.PERCENTAGE }, 
+                        shading: { fill: "334155", type: ShadingType.CLEAR } 
+                      }),
                     ],
                   }),
                   ...safeArray(fase.sesiones).map((s: Session) => 
                     new TableRow({
                       children: [
                         new TableCell({ 
-                          children: [new Paragraph({ text: String(s.numero), alignment: AlignmentType.CENTER, bold: true })],
+                          children: [new Paragraph({ children: [new TextRun({ text: String(s.numero), bold: true })], alignment: AlignmentType.CENTER })],
                           verticalAlign: VerticalAlign.CENTER
                         }),
                         new TableCell({ 
@@ -137,9 +154,8 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
                             new Paragraph({ children: [new TextRun({ text: "Inicio: ", bold: true }), new TextRun({ text: safeArray(s.actividades_inicio).join(" ") })], spacing: { after: 50 } }),
                             new Paragraph({ children: [new TextRun({ text: "Desarrollo: ", bold: true }), new TextRun({ text: safeArray(s.actividades_desarrollo).join(" ") })], spacing: { after: 50 } }),
                             new Paragraph({ children: [new TextRun({ text: "Cierre: ", bold: true }), new TextRun({ text: safeArray(s.actividades_cierre).join(" ") })], spacing: { after: 100 } }),
-                            new Paragraph({ children: [new TextRun({ text: "Recursos: ", italic: true }), new TextRun({ text: safeArray(s.recursos).join(", ") })] }),
-                          ],
-                          spacing: { after: 100, before: 100 }
+                            new Paragraph({ children: [new TextRun({ text: "Recursos: ", italics: true }), new TextRun({ text: safeArray(s.recursos).join(", ") })] }),
+                          ]
                         }),
                       ],
                     })
@@ -157,19 +173,19 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
               rows: [
                 new TableRow({
                   children: [
-                    new TableCell({ children: [new Paragraph({ text: "Técnicas", bold: true })], width: { size: 30, type: WidthType.PERCENTAGE } }),
+                    new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Técnicas", bold: true })] })], width: { size: 30, type: WidthType.PERCENTAGE } }),
                     new TableCell({ children: [new Paragraph({ text: safeArray(plan.evaluacion_formativa?.tecnicas).join(", ") })] }),
                   ],
                 }),
                 new TableRow({
                   children: [
-                    new TableCell({ children: [new Paragraph({ text: "Instrumentos", bold: true })] }),
+                    new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Instrumentos", bold: true })] })] }),
                     new TableCell({ children: [new Paragraph({ text: safeArray(plan.evaluacion_formativa?.instrumentos).join(", ") })] }),
                   ],
                 }),
                 new TableRow({
                   children: [
-                    new TableCell({ children: [new Paragraph({ text: "Criterios", bold: true })] }),
+                    new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Criterios", bold: true })] })] }),
                     new TableCell({ children: [new Paragraph({ text: safeArray(plan.evaluacion_formativa?.criterios_evaluacion).join(". ") })] }),
                   ],
                 }),
@@ -183,7 +199,11 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
               new Paragraph({ text: "BIBLIOGRAFÍA Y REFERENCIAS", heading: HeadingLevel.HEADING_2 }),
               ...safeArray(plan.bibliografia_especializada).map(b => 
                 new Paragraph({ 
-                  text: `• ${safeStr(b.autor, "Anónimo")} (${safeStr(b.año, "S/F")}). "${safeStr(b.titulo, "Sin título")}". Uso: ${safeStr(b.uso, "Referencia")}`, 
+                  children: [
+                    new TextRun({ text: `• ${safeStr(b.autor, "Anónimo")} (${safeStr(b.año, "S/F")}). ` }),
+                    new TextRun({ text: `"${safeStr(b.titulo, "Sin título")}"`, bold: true }),
+                    new TextRun({ text: `. Uso: ${safeStr(b.uso, "Referencia")}` })
+                  ],
                   spacing: { after: 50 } 
                 })
               )

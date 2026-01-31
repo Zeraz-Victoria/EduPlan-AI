@@ -1,6 +1,6 @@
 
 import { GoogleGenAI } from "@google/genai";
-import { LessonPlan, PlanningRequest } from "../types.ts";
+import { LessonPlan, PlanningRequest } from "../types";
 
 export const generateLessonPlanStream = async (
   params: PlanningRequest,
@@ -85,9 +85,6 @@ export const generateLessonPlanStream = async (
 
   } catch (error: any) {
     console.error("Gemini API Error:", error);
-    if (error.message?.includes("429") || error.message?.includes("RESOURCE_EXHAUSTED")) {
-      throw new Error("LÍMITE DE CUOTA: Por favor espera un minuto para volver a generar.");
-    }
     throw new Error("Error al generar la planeación. Intenta con un contexto más sencillo.");
   }
 };

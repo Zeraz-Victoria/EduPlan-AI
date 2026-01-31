@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { FASES_NEM, METODOLOGIAS, GRADOS_FLAT } from './constants.tsx';
-import { Methodology, LessonPlan } from './types.ts';
-import { generateLessonPlanStream } from './services/geminiService.ts';
-import LessonPlanPreview from './components/LessonPlanPreview.tsx';
+import { FASES_NEM, METODOLOGIAS, GRADOS_FLAT } from './constants';
+import { Methodology, LessonPlan } from './types';
+import { generateLessonPlanStream } from './services/geminiService';
+import LessonPlanPreview from './components/LessonPlanPreview';
 import { 
   GraduationCap, 
   Loader2, 
@@ -94,7 +94,6 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-[#f8fafc] overflow-hidden font-sans">
-      {/* Sidebar de Configuración */}
       <aside className="w-[380px] bg-white border-r border-slate-200 flex flex-col shadow-xl z-50">
         <div className="p-8 border-b border-slate-100 bg-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-brand-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
@@ -229,7 +228,6 @@ const App: React.FC = () => {
         </div>
       </aside>
 
-      {/* Área de Visualización */}
       <main className="flex-1 bg-[#fcfcfd] relative overflow-y-auto custom-scrollbar">
         {!lessonPlan && !loading && (
           <div className="h-full flex flex-col items-center justify-center text-center p-20 animate-in fade-in zoom-in-95">
@@ -241,16 +239,6 @@ const App: React.FC = () => {
             <p className="text-slate-500 max-w-md leading-relaxed font-bold text-lg">
               Tu planeación de codiseño aparecerá aquí con toda la estructura oficial de la NEM.
             </p>
-            <div className="flex gap-6 mt-12">
-              <div className="flex items-center gap-3 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-100">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-200"></div> 
-                <span className="text-[11px] font-black uppercase tracking-widest text-emerald-700">Articulación Total</span>
-              </div>
-              <div className="flex items-center gap-3 px-4 py-2 bg-brand-50 rounded-full border border-brand-100">
-                <div className="w-2.5 h-2.5 rounded-full bg-brand-500 shadow-sm shadow-brand-200"></div> 
-                <span className="text-[11px] font-black uppercase tracking-widest text-brand-700">Diseño Situado</span>
-              </div>
-            </div>
           </div>
         )}
 
@@ -265,9 +253,6 @@ const App: React.FC = () => {
               </div>
             </div>
             <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">Arquitectura Pedagógica NEM</h3>
-            <div className="h-1.5 w-64 bg-slate-100 rounded-full overflow-hidden mb-6">
-               <div className="h-full bg-gradient-brand animate-progress-bar w-[60%]"></div>
-            </div>
             <p className="text-brand-600 text-xs font-black uppercase tracking-[0.3em] animate-pulse">
               {LOADING_STEPS[loadingStep]}
             </p>
@@ -280,16 +265,6 @@ const App: React.FC = () => {
           </div>
         )}
       </main>
-
-      <style>{`
-        @keyframes progress-bar {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(200%); }
-        }
-        .animate-progress-bar {
-          animation: progress-bar 2s infinite linear;
-        }
-      `}</style>
     </div>
   );
 };

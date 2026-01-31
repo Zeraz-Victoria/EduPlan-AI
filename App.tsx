@@ -9,14 +9,14 @@ import {
   Loader2, 
   BookOpen, 
   Zap, 
-  XCircle, 
   Brain, 
   Layers, 
   School, 
   ListOrdered, 
   MessageSquareText,
-  Sparkles,
-  AlertTriangle
+  AlertTriangle,
+  Menu,
+  X
 } from 'lucide-react';
 
 const LOADING_STEPS = [
@@ -42,6 +42,7 @@ const App: React.FC = () => {
   const [loadingStep, setLoadingStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [lessonPlan, setLessonPlan] = useState<LessonPlan | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     let interval: any;
@@ -68,6 +69,7 @@ const App: React.FC = () => {
     setLoading(true);
     setError(null);
     setLessonPlan(null);
+    setIsSidebarOpen(false); // Cerrar sidebar en móvil al generar
 
     try {
       const result = await generateLessonPlanStream(
@@ -94,20 +96,42 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#f8fafc] overflow-hidden font-sans">
-      <aside className="w-[380px] bg-white border-r border-slate-200 flex flex-col shadow-xl z-50">
-        <div className="p-8 border-b border-slate-100 bg-white relative overflow-hidden">
+    <div className="flex h-screen bg-[#f8fafc] overflow-hidden font-sans relative">
+      {/* Botón de Menú Móvil */}
+      <div className="lg:hidden fixed top-4 left-4 z-[60]">
+        <button 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="bg-brand-600 text-white p-3 rounded-2xl shadow-xl hover:bg-brand-700 transition-all active:scale-95"
+        >
+          {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </div>
+
+      {/* Overlay para móvil */}
+      {isSidebarOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[50] transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar Responsivo */}
+      <aside className={`
+        fixed inset-y-0 left-0 z-[55] w-[85%] sm:w-[380px] bg-white border-r border-slate-200 flex flex-col shadow-2xl transition-transform duration-300 lg:static lg:translate-x-0
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <div className="p-6 sm:p-8 border-b border-slate-100 bg-white relative overflow-hidden shrink-0">
           <div className="absolute top-0 right-0 w-32 h-32 bg-brand-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
           <div className="relative z-10 flex items-center gap-3 mb-1">
             <div className="bg-gradient-brand p-2.5 rounded-xl text-white shadow-lg shadow-brand-200">
               <GraduationCap className="w-6 h-6" />
             </div>
-            <h1 className="font-extrabold text-xl text-slate-900 tracking-tight">Maestro <span className="text-brand-600">NEM</span></h1>
+            <h1 className="font-extrabold text-xl text-slate-900 tracking-tight">EduPlanAI</h1>
           </div>
           <p className="relative z-10 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] pl-1">Codiseño Inteligente</p>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-10">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-5 sm:p-6 space-y-8 sm:space-y-10">
           <section className="space-y-4">
             <div className="flex items-center gap-2 px-1">
               <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
@@ -121,22 +145,22 @@ const App: React.FC = () => {
                 placeholder="Nombre de la escuela" 
                 value={nombreEscuela}
                 onChange={e => setNombreEscuela(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all placeholder:text-slate-400"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input 
                   type="text" 
                   placeholder="CCT" 
                   value={cct}
                   onChange={e => setCct(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all placeholder:text-slate-400"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10"
                 />
                 <input 
                   type="text" 
                   placeholder="Zona" 
                   value={zonaEscolar}
                   onChange={e => setZonaEscolar(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all placeholder:text-slate-400"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10"
                 />
               </div>
               <input 
@@ -144,7 +168,7 @@ const App: React.FC = () => {
                 placeholder="Nombre del Docente" 
                 value={nombreDocente}
                 onChange={e => setNombreDocente(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-semibold"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10 font-semibold"
               />
             </div>
           </section>
@@ -160,7 +184,7 @@ const App: React.FC = () => {
               <select 
                 value={grado} 
                 onChange={e => handleGradoChange(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10 appearance-none font-medium text-slate-700 cursor-pointer"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10 font-medium text-slate-700 cursor-pointer"
               >
                 {FASES_NEM.map(f => (
                   <optgroup key={f.id} label={f.nombre}>
@@ -171,7 +195,7 @@ const App: React.FC = () => {
               <select 
                 value={metodologia} 
                 onChange={e => setMetodologia(e.target.value as Methodology)}
-                className="w-full bg-brand-50 border-2 border-brand-100 rounded-xl px-4 py-3 text-sm outline-none text-brand-700 font-bold cursor-pointer hover:bg-brand-100/50 transition-colors"
+                className="w-full bg-brand-50 border-2 border-brand-100 rounded-xl px-4 py-3 text-sm outline-none text-brand-700 font-bold cursor-pointer"
               >
                 {METODOLOGIAS.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
@@ -196,19 +220,19 @@ const App: React.FC = () => {
               </div>
               <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Diagnóstico Situacional</h3>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3 pb-4">
               <textarea 
                 placeholder="Ej: Problemas de basura en la comunidad..."
                 value={contexto}
                 onChange={e => setContexto(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10 h-44 resize-none leading-relaxed text-slate-700 placeholder:text-slate-400 font-medium"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand-500/10 h-40 sm:h-44 resize-none leading-relaxed text-slate-700 font-medium"
               />
             </div>
           </section>
 
           {error && (
             <div className="p-4 bg-red-50 border-2 border-red-200 rounded-2xl text-red-700 text-[11px] font-bold flex flex-col gap-2 animate-in fade-in slide-in-from-top-4">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-red-800">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
                 <span className="uppercase tracking-wider">Error de Sistema</span>
               </div>
@@ -219,7 +243,7 @@ const App: React.FC = () => {
           )}
         </div>
 
-        <div className="p-6 bg-slate-50 border-t border-slate-200">
+        <div className="p-5 sm:p-6 bg-slate-50 border-t border-slate-200 shrink-0">
           <button 
             onClick={handleGenerate}
             disabled={loading}
@@ -231,39 +255,40 @@ const App: React.FC = () => {
         </div>
       </aside>
 
+      {/* Main Content Responsivo */}
       <main className="flex-1 bg-[#fcfcfd] relative overflow-y-auto custom-scrollbar">
         {!lessonPlan && !loading && (
-          <div className="h-full flex flex-col items-center justify-center text-center p-20 animate-in fade-in zoom-in-95">
-            <div className="w-32 h-32 bg-white rounded-[2rem] flex items-center justify-center mb-10 shadow-2xl shadow-slate-200 relative">
-               <div className="absolute inset-0 bg-brand-50 rounded-[2rem] animate-pulse"></div>
-               <BookOpen className="w-12 h-12 text-brand-500 relative z-10" />
+          <div className="min-h-full flex flex-col items-center justify-center text-center p-6 sm:p-10 lg:p-20 animate-in fade-in zoom-in-95">
+            <div className="w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-[1.8rem] sm:rounded-[2rem] flex items-center justify-center mb-8 sm:mb-10 shadow-2xl shadow-slate-200 relative">
+               <div className="absolute inset-0 bg-brand-50 rounded-[1.8rem] sm:rounded-[2rem] animate-pulse"></div>
+               <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 text-brand-500 relative z-10" />
             </div>
-            <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-4">Lienzo Pedagógico</h2>
-            <p className="text-slate-500 max-w-md leading-relaxed font-bold text-lg">
-              Tu planeación de codiseño aparecerá aquí tras configurar tu API KEY y completar los datos.
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-4">Lienzo Pedagógico</h2>
+            <p className="text-slate-500 max-w-md leading-relaxed font-bold text-base sm:text-lg">
+              Configura los datos en el menú lateral para generar tu plano didáctico personalizado.
             </p>
           </div>
         )}
 
         {loading && (
-          <div className="h-full flex flex-col items-center justify-center p-20 bg-white">
-            <div className="relative mb-14">
-              <div className="w-32 h-32 border-[4px] border-slate-100 border-t-brand-600 rounded-full animate-spin shadow-inner"></div>
+          <div className="min-h-full flex flex-col items-center justify-center p-6 sm:p-10 lg:p-20 bg-white">
+            <div className="relative mb-10 sm:mb-14">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 border-[4px] border-slate-100 border-t-brand-600 rounded-full animate-spin shadow-inner"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                 <div className="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center animate-pulse shadow-sm">
-                   <Brain className="w-8 h-8 text-brand-600" />
+                 <div className="w-12 h-12 sm:w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center animate-pulse shadow-sm">
+                   <Brain className="w-6 h-6 sm:w-8 sm:h-8 text-brand-600" />
                  </div>
               </div>
             </div>
-            <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">Arquitectura Pedagógica NEM</h3>
-            <p className="text-brand-600 text-xs font-black uppercase tracking-[0.3em] animate-pulse">
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-3 tracking-tight text-center">Arquitectura Pedagógica NEM</h3>
+            <p className="text-brand-600 text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] animate-pulse text-center">
               {LOADING_STEPS[loadingStep]}
             </p>
           </div>
         )}
 
         {lessonPlan && (
-          <div className="p-10 lg:p-16 animate-in slide-in-from-bottom-8 fade-in duration-1000">
+          <div className="p-4 sm:p-8 lg:p-16 animate-in slide-in-from-bottom-8 fade-in duration-1000">
             <LessonPlanPreview plan={lessonPlan} />
           </div>
         )}

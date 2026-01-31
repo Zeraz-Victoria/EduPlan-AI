@@ -18,22 +18,24 @@ export const generateLessonPlanStream = async (
     
     const systemInstruction = `
       Eres un Doctor en Pedagogía y Especialista en el Plan de Estudio 2022 (NEM, México).
-      Diseña una "Planeación de Codiseño (Plano Didáctico)" de excelencia técnica.
-      Responde EXCLUSIVAMENTE con el objeto JSON solicitado.
+      Diseña una "Planeación de Codiseño (Plano Didáctico)" de excelencia técnica y pedagógica.
+      Debes ser extremadamente preciso con la vinculación de contenidos y PDA.
+      Responde EXCLUSIVAMENTE con el objeto JSON solicitado, respetando estrictamente los nombres de las propiedades.
     `;
 
     const prompt = `
-      Genera una planeación para:
-      - Grado: ${params.grado} | Fase: ${params.fase}
+      Genera una planeación didáctica completa con los siguientes datos:
+      - Grado: ${params.grado}
+      - Fase: ${params.fase}
       - Metodología: ${params.metodologia}
-      - Sesiones: ${params.numSesiones}
-      - Problemática: ${params.contextoAdicional || 'General'}
+      - Número de Sesiones: ${params.numSesiones}
+      - Problemática/Contexto: ${params.contextoAdicional || 'General'}
       - Escuela: ${params.nombreEscuela}
       - Docente: ${params.nombreDocente}
 
-      Formato JSON esperado:
+      ESTRUCTURA JSON OBLIGATORIA (Usa exactamente estas llaves):
       {
-        "titulo_proyecto": "Título creativo corto",
+        "titulo_proyecto": "Título creativo",
         "nombre_docente": "${params.nombreDocente}",
         "nombre_escuela": "${params.nombreEscuela}",
         "cct": "${params.cct || ''}",
@@ -41,15 +43,38 @@ export const generateLessonPlanStream = async (
         "grado": "${params.grado}",
         "fase_nem": "${params.fase}",
         "metodologia": "${params.metodologia}",
-        "campo_formativo": [],
-        "ejes_articuladores": [],
-        "proposito": "...",
-        "diagnostico_socioeducativo": "...",
-        "temporalidad_realista": "...",
-        "vinculacion_contenido_pda": [{ "asignatura": "...", "contenido": "...", "pda_vinculados": [] }],
-        "fases_desarrollo": [{ "nombre": "...", "descripcion": "...", "sesiones": [{ "numero": 1, "titulo": "...", "duracion": "...", "actividades_inicio": [], "actividades_desarrollo": [], "actividades_cierre": [], "recursos": [], "evaluacion_sesion": "..." }] }],
-        "evaluacion_formativa": { "tecnicas": [], "instrumentos": [], "criterios_evaluacion": [] },
-        "bibliografia_especializada": []
+        "campo_formativo": ["Campo 1", "Campo 2"],
+        "ejes_articuladores": ["Eje 1", "Eje 2"],
+        "proposito": "Propósito general del proyecto",
+        "diagnostico_socioeducativo": "Análisis del contexto",
+        "temporalidad_realista": "Duración estimada",
+        "vinculacion_contenido_pda": [{ "asignatura": "...", "contenido": "...", "pda_vinculados": ["..."] }],
+        "fases_desarrollo": [
+          { 
+            "nombre": "Nombre de la Fase", 
+            "descripcion": "Descripción breve", 
+            "sesiones": [
+              { 
+                "numero": 1, 
+                "titulo": "Título Sesión", 
+                "duracion": "50 min", 
+                "actividades_inicio": ["..."], 
+                "actividades_desarrollo": ["..."], 
+                "actividades_cierre": ["..."], 
+                "recursos": ["..."], 
+                "evaluacion_sesion": "..." 
+              }
+            ] 
+          }
+        ],
+        "evaluacion_formativa": { 
+          "tecnicas": ["..."], 
+          "instrumentos": ["..."], 
+          "criterios_evaluacion": ["..."] 
+        },
+        "bibliografia_especializada": [
+          { "autor": "Nombre Autor", "titulo": "Título Libro/Art", "año": "2024", "uso": "Para qué sirve en el proyecto" }
+        ]
       }
     `;
 
@@ -70,22 +95,28 @@ export const generateLessonPlanStream = async (
     if (firstBrace === -1) throw new Error("La IA no generó un formato compatible.");
     
     const cleanJson = fullText.substring(firstBrace, lastBrace + 1);
-    return JSON.parse(cleanJson) as LessonPlan;
+    const parsed = JSON.parse(cleanJson);
+
+    // Validación mínima para evitar undefineds comunes
+    if (parsed.bibliografia_especializada) {
+      parsed.bibliografia_especializada = parsed.bibliografia_especializada.map((b: any) => ({
+        autor: b.autor || b.author || "Anónimo",
+        titulo: b.titulo || b.title || "Sin título",
+        año: b.año || b.year || "S/F",
+        uso: b.uso || b.use || "Referencia general"
+      }));
+    }
+
+    return parsed as LessonPlan;
 
   } catch (error: any) {
     console.error("Detalle técnico del error:", error);
-    
-    // Traducción de errores técnicos de Google a mensajes para el usuario
     if (error.message?.includes("API_KEY_INVALID")) {
-      throw new Error("LA API KEY ES INCORRECTA: La clave copiada de AI Studio no es válida.");
+      throw new Error("LA API KEY ES INCORRECTA: La clave no es válida.");
     }
-    if (error.message?.includes("429") || error.message?.includes("QUOTA")) {
-      throw new Error("CUOTA EXCEDIDA: Has hecho demasiadas peticiones. Espera 60 segundos.");
+    if (error.message?.includes("429")) {
+      throw new Error("CUOTA EXCEDIDA: Espera 60 segundos.");
     }
-    if (error.message?.includes("location not supported")) {
-      throw new Error("REGIÓN NO SOPORTADA: Google no permite el uso de esta API en tu ubicación actual sin VPN.");
-    }
-    
     throw new Error(`ERROR DE GENERACIÓN: ${error.message.substring(0, 100)}`);
   }
 };

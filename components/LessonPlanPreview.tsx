@@ -31,7 +31,8 @@ import {
   WidthType, 
   HeadingLevel, 
   AlignmentType, 
-  ShadingType
+  ShadingType,
+  VerticalAlign
 } from 'docx';
 
 interface Props {
@@ -43,6 +44,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
   const [isExportingWord, setIsExportingWord] = useState(false);
 
   const safeArray = (arr: any): any[] => Array.isArray(arr) ? arr : [];
+  const safeStr = (val: any, fallback: string = 'N/A') => (val && val !== 'undefined') ? String(val) : fallback;
 
   const exportToWord = async () => {
     setIsExportingWord(true);
@@ -51,28 +53,34 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
         sections: [{
           properties: {},
           children: [
+            // Encabezado
             new Paragraph({
-              text: plan.titulo_proyecto.toUpperCase(),
+              text: safeStr(plan.titulo_proyecto).toUpperCase(),
               heading: HeadingLevel.HEADING_1,
               alignment: AlignmentType.CENTER,
+              spacing: { after: 200 }
             }),
             new Paragraph({
               children: [
-                new TextRun({ text: `ESCUELA: ${plan.nombre_escuela}`, bold: true }),
-                new TextRun({ text: ` | DOCENTE: ${plan.nombre_docente}`, bold: true }),
+                new TextRun({ text: `ESCUELA: ${safeStr(plan.nombre_escuela)}`, bold: true }),
+                new TextRun({ text: ` | DOCENTE: ${safeStr(plan.nombre_docente)}`, bold: true }),
               ],
               alignment: AlignmentType.CENTER,
-              spacing: { after: 200 },
+              spacing: { after: 100 },
             }),
             new Paragraph({
               children: [
-                new TextRun({ text: `Fase: ${plan.fase_nem} | Metodología: ${plan.metodologia}`, italic: true }),
+                new TextRun({ text: `Fase: ${safeStr(plan.fase_nem)} | Metodología: ${safeStr(plan.metodologia)}`, italic: true }),
               ],
               alignment: AlignmentType.CENTER,
               spacing: { after: 400 },
             }),
+
+            // Diagnóstico
             new Paragraph({ text: "DIAGNÓSTICO SOCIOEDUCATIVO", heading: HeadingLevel.HEADING_2 }),
-            new Paragraph({ text: plan.diagnostico_socioeducativo, spacing: { after: 300 } }),
+            new Paragraph({ text: safeStr(plan.diagnostico_socioeducativo), spacing: { after: 300 } }),
+
+            // Elementos Curriculares
             new Table({
               width: { size: 100, type: WidthType.PERCENTAGE },
               rows: [
@@ -91,16 +99,19 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
                 new TableRow({
                   children: [
                     new TableCell({ children: [new Paragraph({ text: "PROPÓSITO", bold: true })], shading: { fill: "F1F5F9", type: ShadingType.CLEAR } }),
-                    new TableCell({ children: [new Paragraph({ text: plan.proposito })] }),
+                    new TableCell({ children: [new Paragraph({ text: safeStr(plan.proposito) })] }),
                   ],
                 }),
               ],
             }),
+
             new Paragraph({ text: "", spacing: { before: 400 } }),
-            new Paragraph({ text: "PLAN DE ACCIÓN (SECUENCIA DIDÁCTICA)", heading: HeadingLevel.HEADING_2 }),
+
+            // Secuencia Didáctica
+            new Paragraph({ text: "SECUENCIA DIDÁCTICA", heading: HeadingLevel.HEADING_2 }),
             ...safeArray(plan.fases_desarrollo).flatMap((fase) => [
               new Paragraph({ 
-                text: fase.nombre.toUpperCase(), 
+                text: safeStr(fase.nombre).toUpperCase(), 
                 heading: HeadingLevel.HEADING_3,
                 spacing: { before: 200, after: 100 }
               }),
@@ -109,22 +120,26 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
                 rows: [
                   new TableRow({
                     children: [
-                      new TableCell({ children: [new Paragraph({ text: "Sesión", bold: true })], width: { size: 10, type: WidthType.PERCENTAGE } }),
-                      new TableCell({ children: [new Paragraph({ text: "Secuencia Didáctica", bold: true })], width: { size: 90, type: WidthType.PERCENTAGE } }),
+                      new TableCell({ children: [new Paragraph({ text: "Sesión", bold: true, alignment: AlignmentType.CENTER })], width: { size: 10, type: WidthType.PERCENTAGE }, shading: { fill: "334155", type: ShadingType.CLEAR } }),
+                      new TableCell({ children: [new Paragraph({ text: "Actividades", bold: true })], width: { size: 90, type: WidthType.PERCENTAGE }, shading: { fill: "334155", type: ShadingType.CLEAR } }),
                     ],
                   }),
                   ...safeArray(fase.sesiones).map((s: Session) => 
                     new TableRow({
                       children: [
-                        new TableCell({ children: [new Paragraph({ text: s.numero.toString(), alignment: AlignmentType.CENTER })] }),
+                        new TableCell({ 
+                          children: [new Paragraph({ text: String(s.numero), alignment: AlignmentType.CENTER, bold: true })],
+                          verticalAlign: VerticalAlign.CENTER
+                        }),
                         new TableCell({ 
                           children: [
-                            new Paragraph({ children: [new TextRun({ text: s.titulo.toUpperCase(), bold: true })], spacing: { after: 100 } }),
+                            new Paragraph({ children: [new TextRun({ text: safeStr(s.titulo).toUpperCase(), bold: true })], spacing: { after: 100 } }),
                             new Paragraph({ children: [new TextRun({ text: "Inicio: ", bold: true }), new TextRun({ text: safeArray(s.actividades_inicio).join(" ") })], spacing: { after: 50 } }),
                             new Paragraph({ children: [new TextRun({ text: "Desarrollo: ", bold: true }), new TextRun({ text: safeArray(s.actividades_desarrollo).join(" ") })], spacing: { after: 50 } }),
                             new Paragraph({ children: [new TextRun({ text: "Cierre: ", bold: true }), new TextRun({ text: safeArray(s.actividades_cierre).join(" ") })], spacing: { after: 100 } }),
                             new Paragraph({ children: [new TextRun({ text: "Recursos: ", italic: true }), new TextRun({ text: safeArray(s.recursos).join(", ") })] }),
                           ],
+                          spacing: { after: 100, before: 100 }
                         }),
                       ],
                     })
@@ -132,14 +147,17 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
                 ],
               }),
             ]),
+
             new Paragraph({ text: "", spacing: { before: 400 } }),
+
+            // Evaluación
             new Paragraph({ text: "EVALUACIÓN FORMATIVA", heading: HeadingLevel.HEADING_2 }),
             new Table({
               width: { size: 100, type: WidthType.PERCENTAGE },
               rows: [
                 new TableRow({
                   children: [
-                    new TableCell({ children: [new Paragraph({ text: "Técnicas", bold: true })] }),
+                    new TableCell({ children: [new Paragraph({ text: "Técnicas", bold: true })], width: { size: 30, type: WidthType.PERCENTAGE } }),
                     new TableCell({ children: [new Paragraph({ text: safeArray(plan.evaluacion_formativa?.tecnicas).join(", ") })] }),
                   ],
                 }),
@@ -157,11 +175,17 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
                 }),
               ],
             }),
+
             new Paragraph({ text: "", spacing: { before: 400 } }),
+
+            // Bibliografía
             ...(safeArray(plan.bibliografia_especializada).length > 0 ? [
-              new Paragraph({ text: "BIBLIOGRAFÍA", heading: HeadingLevel.HEADING_2 }),
+              new Paragraph({ text: "BIBLIOGRAFÍA Y REFERENCIAS", heading: HeadingLevel.HEADING_2 }),
               ...safeArray(plan.bibliografia_especializada).map(b => 
-                new Paragraph({ text: `• ${b.autor} (${b.año}). ${b.titulo}. Uso: ${b.uso}`, spacing: { after: 50 } })
+                new Paragraph({ 
+                  text: `• ${safeStr(b.autor, "Anónimo")} (${safeStr(b.año, "S/F")}). "${safeStr(b.titulo, "Sin título")}". Uso: ${safeStr(b.uso, "Referencia")}`, 
+                  spacing: { after: 50 } 
+                })
               )
             ] : []),
           ],
@@ -195,38 +219,42 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
 
       doc.setFillColor(79, 70, 229);
       doc.rect(0, 0, pageWidth, 60, 'F');
+      
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(20);
-      const titleLines = doc.splitTextToSize(plan.titulo_proyecto.toUpperCase(), contentWidth - 20);
+      const titleLines = doc.splitTextToSize(safeStr(plan.titulo_proyecto).toUpperCase(), contentWidth - 20);
       doc.text(titleLines, margin, 25);
+      
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.text(`ESC: ${plan.nombre_escuela} | CCT: ${plan.cct || 'N/A'}`, margin, 45);
-      doc.text(`DOCENTE: ${plan.nombre_docente} | ZONA: ${plan.zona_escolar || 'N/A'}`, margin, 50);
+      doc.text(`ESC: ${safeStr(plan.nombre_escuela)} | CCT: ${safeStr(plan.cct)}`, margin, 45);
+      doc.text(`DOCENTE: ${safeStr(plan.nombre_docente)} | ZONA: ${safeStr(plan.zona_escolar)}`, margin, 50);
 
       doc.setFillColor(67, 56, 202);
       doc.roundedRect(margin, 53, 50, 6, 3, 3, 'F');
       doc.setFontSize(8);
       doc.setFont('helvetica', 'bold');
-      doc.text(plan.metodologia.toUpperCase(), margin + 3, 57.2);
+      doc.text(safeStr(plan.metodologia).toUpperCase(), margin + 3, 57.2);
 
       doc.setFillColor(16, 185, 129);
       doc.roundedRect(margin + 55, 53, 25, 6, 3, 3, 'F');
-      doc.text(`FASE ${plan.fase_nem}`, margin + 58, 57.2);
+      doc.text(`FASE ${safeStr(plan.fase_nem)}`, margin + 58, 57.2);
 
       let currentY = 70;
+
       autoTable(doc, {
         startY: currentY,
         margin: { left: margin, right: margin },
         head: [['DIAGNÓSTICO SOCIOEDUCATIVO']],
-        body: [[plan.diagnostico_socioeducativo]],
+        body: [[safeStr(plan.diagnostico_socioeducativo)]],
         theme: 'grid',
         headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105], fontSize: 9 },
         styles: { fontSize: 9, cellPadding: 6, fontStyle: 'normal' }
       });
 
       currentY = (doc as any).lastAutoTable.finalY + 10;
+
       autoTable(doc, {
         startY: currentY,
         margin: { left: margin, right: margin },
@@ -234,7 +262,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
         body: [
           ['CAMPOS FORMATIVOS', safeArray(plan.campo_formativo).join(', ')],
           ['EJES ARTICULADORES', safeArray(plan.ejes_articuladores).join(', ')],
-          ['PROPÓSITO', plan.proposito]
+          ['PROPÓSITO', safeStr(plan.proposito)]
         ],
         theme: 'grid',
         headStyles: headerStyles,
@@ -253,7 +281,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
         autoTable(doc, {
           startY: currentY,
           margin: { left: margin, right: margin },
-          body: [[{ content: fase.nombre.toUpperCase(), styles: { fillColor: [238, 242, 255], textColor: [67, 56, 202], fontStyle: 'bold', fontSize: 11 } }]],
+          body: [[{ content: safeStr(fase.nombre).toUpperCase(), styles: { fillColor: [238, 242, 255], textColor: [67, 56, 202], fontStyle: 'bold', fontSize: 11 } }]],
           theme: 'plain'
         });
         currentY = (doc as any).lastAutoTable.finalY;
@@ -263,9 +291,9 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
           margin: { left: margin, right: margin },
           head: [['SESIÓN', 'DESARROLLO DE ACTIVIDADES']],
           body: safeArray(fase.sesiones).map((s: Session) => [
-            { content: `S-${s.numero}\n${s.duracion || ''}`, styles: { halign: 'center', fontStyle: 'bold' } },
+            { content: `S-${s.numero}\n${safeStr(s.duracion)}`, styles: { halign: 'center', fontStyle: 'bold' } },
             {
-              content: `${s.titulo.toUpperCase()}\n\n` +
+              content: `${safeStr(s.titulo).toUpperCase()}\n\n` +
                        `INICIO:\n${safeArray(s.actividades_inicio).map(a => ' • ' + a).join('\n')}\n\n` +
                        `DESARROLLO:\n${safeArray(s.actividades_desarrollo).map(a => ' • ' + a).join('\n')}\n\n` +
                        `CIERRE:\n${safeArray(s.actividades_cierre).map(a => ' • ' + a).join('\n')}\n\n` +
@@ -305,11 +333,12 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
         doc.setFont('helvetica', 'bold');
         doc.text("BIBLIOGRAFÍA Y REFERENCIAS", margin, currentY);
         currentY += 5;
+
         autoTable(doc, {
           startY: currentY,
           margin: { left: margin, right: margin },
           head: [['AUTOR', 'AÑO', 'TÍTULO', 'USO']],
-          body: bibData.map(b => [b.autor, b.año, b.titulo, b.uso]),
+          body: bibData.map(b => [safeStr(b.autor, "Anónimo"), safeStr(b.año, "S/F"), safeStr(b.titulo, "Sin título"), safeStr(b.uso, "Referencia")]),
           theme: 'striped',
           headStyles: { fillColor: [148, 163, 184], fontSize: 8 },
           styles: { fontSize: 8, cellPadding: 3 }
@@ -403,7 +432,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
         <div className="bg-amber-50/50 p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-amber-100 shadow-sm transition-transform hover:-translate-y-1 sm:col-span-2 lg:col-span-1">
           <Calendar className="w-5 h-5 text-amber-600 mb-4" />
           <h4 className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] mb-4 text-slate-500">Propósito</h4>
-          <p className="text-xs sm:text-sm font-bold text-amber-800 leading-relaxed italic">"{plan.proposito}"</p>
+          <p className="text-xs sm:text-sm font-bold text-amber-800 leading-relaxed italic">"{safeStr(plan.proposito)}"</p>
         </div>
       </div>
 
@@ -413,7 +442,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
           <Info className="w-5 h-5 text-slate-400" />
           <h3 className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em] text-slate-400">Diagnóstico Socioeducativo</h3>
         </div>
-        <p className="text-slate-600 text-sm font-medium leading-relaxed whitespace-pre-wrap">{plan.diagnostico_socioeducativo}</p>
+        <p className="text-slate-600 text-sm font-medium leading-relaxed whitespace-pre-wrap">{safeStr(plan.diagnostico_socioeducativo)}</p>
       </div>
 
       {/* FASES Y SESIONES RESPONSIVO */}
@@ -421,8 +450,8 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
         {safeArray(plan.fases_desarrollo).map((fase, i) => (
           <div key={i} className="bg-white border-2 border-slate-100 rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-2xl transition-all">
             <div className="px-6 sm:px-10 py-6 sm:py-8 border-b border-slate-100 bg-slate-50/50">
-              <h4 className="text-xs sm:text-sm font-black text-brand-600 uppercase tracking-[0.3em]">{fase.nombre}</h4>
-              <p className="text-xs sm:text-sm font-bold text-slate-500 mt-2">{fase.descripcion}</p>
+              <h4 className="text-xs sm:text-sm font-black text-brand-600 uppercase tracking-[0.3em]">{safeStr(fase.nombre)}</h4>
+              <p className="text-xs sm:text-sm font-bold text-slate-500 mt-2">{safeStr(fase.descripcion)}</p>
             </div>
             <div className="divide-y divide-slate-50">
               {safeArray(fase.sesiones).map((s, si) => (
@@ -435,7 +464,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
                       </div>
                     </div>
                     <div className="flex-1 space-y-6 sm:space-y-8">
-                      <h5 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{s.titulo}</h5>
+                      <h5 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{safeStr(s.titulo)}</h5>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
                         <div>
                           <span className="text-[9px] sm:text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block mb-3">Inicio</span>
@@ -480,7 +509,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
         <div className="absolute top-0 right-0 w-48 sm:w-64 h-48 sm:h-64 bg-brand-500/10 rounded-full -mr-24 sm:-mr-32 -mt-24 sm:-mt-32 blur-3xl group-hover:bg-brand-500/20 transition-all"></div>
         <div className="flex items-center gap-4 sm:gap-6 mb-10 sm:mb-16 relative z-10">
           <div className="p-3 sm:p-4 bg-brand-500/20 rounded-xl sm:rounded-2xl border border-brand-500/20 shadow-lg shadow-black/20">
-            <ClipboardList className="w-6 h-6 sm:w-8 sm:h-8 text-brand-400" />
+            <ClipboardList className="w-6 h-6 sm:w-8 h-8 text-brand-400" />
           </div>
           <h3 className="text-2xl sm:text-3xl font-black tracking-tight">Evaluación Formativa</h3>
         </div>
@@ -527,12 +556,12 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
             {plan.bibliografia_especializada.map((bib, i) => (
               <div key={i} className="bg-white p-5 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm flex items-start gap-4 hover:shadow-md transition-all">
                 <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0">
-                  <span className="text-[9px] sm:text-[10px] font-black text-slate-400">{bib.año}</span>
+                  <span className="text-[9px] sm:text-[10px] font-black text-slate-400">{safeStr(bib.año, "S/F")}</span>
                 </div>
                 <div className="min-w-0">
-                  <h6 className="text-sm font-bold text-slate-900 truncate">{bib.titulo}</h6>
-                  <p className="text-[9px] sm:text-[10px] text-slate-500 mt-1 uppercase tracking-wider font-bold truncate">{bib.autor}</p>
-                  <p className="text-[9px] sm:text-[10px] text-brand-600 mt-2 font-black uppercase tracking-[0.1em] line-clamp-2">Uso: {bib.uso}</p>
+                  <h6 className="text-sm font-bold text-slate-900 truncate">{safeStr(bib.titulo, "Sin título")}</h6>
+                  <p className="text-[9px] sm:text-[10px] text-slate-500 mt-1 uppercase tracking-wider font-bold truncate">{safeStr(bib.autor, "Anónimo")}</p>
+                  <p className="text-[9px] sm:text-[10px] text-brand-600 mt-2 font-black uppercase tracking-[0.1em] line-clamp-2">Uso: {safeStr(bib.uso, "Referencia")}</p>
                 </div>
               </div>
             ))}

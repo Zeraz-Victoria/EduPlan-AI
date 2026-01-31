@@ -18,9 +18,12 @@ export const generateLessonPlanStream = async (
     
     const systemInstruction = `
       Eres un Doctor en Pedagogía y Especialista de alto nivel en el Plan de Estudio 2022 de la Nueva Escuela Mexicana (NEM).
-      Tu tarea es diseñar un "Plano Didáctico" de excelencia.
-      REQUISITO CRÍTICO: Debes incluir CONTENIDOS y PDA (Procesos de Desarrollo de Aprendizaje) REALES y VIGENTES de los Programas Sintéticos de la SEP para la ${params.fase} y el grado ${params.grado}.
-      No inventes los PDA; deben ser coherentes con la estructura curricular oficial.
+      Tu tarea es diseñar un "Plano Didáctico" de excelencia con un enfoque INTEGRAL e INTERDISCIPLINARIO.
+      
+      REQUISITO CRÍTICO CURRICULAR: Debes realizar un mapeo exhaustivo de los Programas Sintéticos de la SEP para la ${params.fase} y el grado ${params.grado}. 
+      Busca la máxima vinculación posible: selecciona TODOS los contenidos y sus respectivos PDA que tengan una relación lógica, directa o transversal con la problemática o contexto proporcionado. No te limites a un número mínimo; el objetivo es abordar la problemática desde tantas aristas curriculares como sea pedagógicamente viable.
+      
+      No inventes los contenidos ni los PDA; deben ser los oficiales.
       Responde EXCLUSIVAMENTE con el objeto JSON solicitado.
     `;
 
@@ -34,8 +37,10 @@ export const generateLessonPlanStream = async (
       - Escuela: ${params.nombreEscuela}
       - Docente: ${params.nombreDocente}
 
-      INSTRUCCIONES PARA VINCULACIÓN CURRICULAR:
-      En la propiedad "vinculacion_contenido_pda", selecciona al menos 2 contenidos y sus respectivos PDA que se relacionen directamente con la problemática planteada y la metodología seleccionada. Asegúrate de que los PDA sean observables y evaluables.
+      INSTRUCCIONES PARA VINCULACIÓN CURRICULAR MAXIMIZADA:
+      En la propiedad "vinculacion_contenido_pda", identifica e incluye la MAYOR CANTIDAD de contenidos y PDA de los diferentes campos formativos que puedan abordarse simultáneamente con la problemática planteada. 
+      Fomenta la interdisciplinariedad (ej. vincular Lenguajes con Ética, Naturaleza y Sociedades si la problemática lo permite).
+      Cada par contenido-PDA debe ser pertinente y contribuir directamente a la resolución o análisis de la situación problema.
 
       ESTRUCTURA JSON OBLIGATORIA:
       {
@@ -47,43 +52,43 @@ export const generateLessonPlanStream = async (
         "grado": "${params.grado}",
         "fase_nem": "${params.fase}",
         "metodologia": "${params.metodologia}",
-        "campo_formativo": ["Indica los campos formativos involucrados"],
-        "ejes_articuladores": ["Indica los ejes articuladores que se movilizan"],
+        "campo_formativo": ["Lista de todos los campos involucrados"],
+        "ejes_articuladores": ["Lista de todos los ejes que se movilizan"],
         "proposito": "Propósito general del proyecto de acuerdo a la NEM",
-        "diagnostico_socioeducativo": "Análisis basado en el contexto proporcionado",
+        "diagnostico_socioeducativo": "Análisis profundo basado en el contexto",
         "temporalidad_realista": "Ej. 2 semanas / ${params.numSesiones} sesiones",
         "vinculacion_contenido_pda": [
           { 
-            "asignatura": "Asignatura/Disciplina vinculada", 
-            "contenido": "Nombre del contenido del programa sintético", 
-            "pda_vinculados": ["PDA 1 del programa", "PDA 2 del programa"] 
+            "asignatura": "Nombre del Campo Formativo o Disciplina", 
+            "contenido": "Nombre completo del contenido del programa sintético", 
+            "pda_vinculados": ["PDA 1 oficial", "PDA 2 oficial", "... todos los que apliquen"] 
           }
         ],
         "fases_desarrollo": [
           { 
-            "nombre": "Nombre de la fase según la metodología", 
-            "descripcion": "Enfoque de esta etapa", 
+            "nombre": "Nombre de la fase", 
+            "descripcion": "Enfoque", 
             "sesiones": [
               { 
                 "numero": 1, 
-                "titulo": "Título de la sesión", 
+                "titulo": "Título de sesión", 
                 "duracion": "50-60 min", 
-                "actividades_inicio": ["Actividades de enganche/recuperación"], 
-                "actividades_desarrollo": ["Actividades de construcción/acción"], 
-                "actividades_cierre": ["Actividades de síntesis/evaluación"], 
-                "recursos": ["Materiales específicos"], 
-                "evaluacion_sesion": "Criterio de éxito de la sesión" 
+                "actividades_inicio": ["..."], 
+                "actividades_desarrollo": ["..."], 
+                "actividades_cierre": ["..."], 
+                "recursos": ["..."], 
+                "evaluacion_sesion": "Criterio" 
               }
             ] 
           }
         ],
         "evaluacion_formativa": { 
-          "tecnicas": ["Técnica 1", "Técnica 2"], 
-          "instrumentos": ["Instrumento 1", "Instrumento 2"], 
-          "criterios_evaluacion": ["Criterio 1", "Criterio 2"] 
+          "tecnicas": ["..."], 
+          "instrumentos": ["..."], 
+          "criterios_evaluacion": ["..."] 
         },
         "bibliografia_especializada": [
-          { "autor": "Nombre Autor", "titulo": "Título Obra", "año": "2024", "uso": "Justificación de uso" }
+          { "autor": "...", "titulo": "...", "año": "...", "uso": "..." }
         ]
       }
     `;
@@ -94,7 +99,7 @@ export const generateLessonPlanStream = async (
       config: { 
         systemInstruction, 
         responseMimeType: "application/json",
-        temperature: 0.2
+        temperature: 0.1
       }
     });
 

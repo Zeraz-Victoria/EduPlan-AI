@@ -22,7 +22,6 @@ import {
   ChevronRight,
   Plus,
   Settings2,
-  // Added User icon import
   User
 } from 'lucide-react';
 
@@ -137,11 +136,11 @@ const App: React.FC = () => {
         <div className="p-8 pb-4 shrink-0">
           <div className="flex items-center gap-3 mb-2">
             <div className="bg-gradient-brand p-2.5 rounded-2xl text-white shadow-brand-500/20 shadow-xl">
-              <Sparkles className="w-6 h-6" />
+              <GraduationCap className="w-6 h-6" />
             </div>
             <div>
               <h1 className="font-display font-extrabold text-2xl text-slate-900 leading-none">EduPlanAI</h1>
-              <p className="text-[10px] font-bold text-brand-600/60 uppercase tracking-widest mt-1">NEM Intelligence</p>
+              <p className="text-[10px] font-bold text-brand-600/60 uppercase tracking-widest mt-1">NEM Inteligente</p>
             </div>
           </div>
         </div>

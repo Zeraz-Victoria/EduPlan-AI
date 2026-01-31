@@ -41,7 +41,8 @@ import {
   HeadingLevel, 
   AlignmentType, 
   ShadingType,
-  VerticalAlign
+  VerticalAlign,
+  BorderStyle
 } from 'docx';
 
 interface Props {
@@ -62,6 +63,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
         sections: [{
           properties: {},
           children: [
+            // TÍTULO Y ENCABEZADO
             new Paragraph({
               text: safeStr(plan.titulo_proyecto).toUpperCase(),
               heading: HeadingLevel.HEADING_1,
@@ -83,8 +85,12 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
               alignment: AlignmentType.CENTER,
               spacing: { after: 400 },
             }),
+
+            // DIAGNÓSTICO
             new Paragraph({ text: "DIAGNÓSTICO SOCIOEDUCATIVO", heading: HeadingLevel.HEADING_2, spacing: { before: 200, after: 100 } }),
             new Paragraph({ text: safeStr(plan.diagnostico_socioeducativo), spacing: { after: 300 } }),
+
+            // ELEMENTOS CURRICULARES
             new Paragraph({ text: "ELEMENTOS CURRICULARES", heading: HeadingLevel.HEADING_2, spacing: { before: 200, after: 100 } }),
             new Table({
               width: { size: 100, type: WidthType.PERCENTAGE },
@@ -109,17 +115,71 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
                 }),
               ],
             }),
+
+            // VINCULACIÓN PDA
             new Paragraph({ text: "VINCULACIÓN CURRICULAR (CONTENIDOS Y PDA)", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 100 } }),
             ...safeArray(plan.vinculacion_contenido_pda).flatMap(v => [
               new Paragraph({ children: [new TextRun({ text: `Campo/Asignatura: ${v.asignatura}`, bold: true })], spacing: { before: 100 } }),
               new Paragraph({ children: [new TextRun({ text: `Contenido: ${v.contenido}`, italics: true })] }),
               ...safeArray(v.pda_vinculados).map(p => new Paragraph({ text: `• ${p}`, spacing: { left: 400 } })),
             ]),
+
+            // SECUENCIA DIDÁCTICA DETALLADA
             new Paragraph({ text: "PLAN DE ACCIÓN (SECUENCIA DIDÁCTICA)", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 200 } }),
             ...safeArray(plan.fases_desarrollo).flatMap((fase, fIdx) => [
-              new Paragraph({ text: `${fIdx + 1}. ${safeStr(fase.nombre).toUpperCase()}`, heading: HeadingLevel.HEADING_3, spacing: { before: 200, after: 100 } }),
-              ...safeArray(fase.sesiones).map(s => new Paragraph({ text: `S${s.numero}: ${s.titulo}`, bold: true }))
+              new Paragraph({ 
+                text: `${fIdx + 1}. ${safeStr(fase.nombre).toUpperCase()}`, 
+                heading: HeadingLevel.HEADING_3,
+                spacing: { before: 200, after: 100 }
+              }),
+              new Paragraph({ text: safeStr(fase.descripcion), italics: true, spacing: { after: 150 } }),
+              ...safeArray(fase.sesiones).map(s => new Table({
+                width: { size: 100, type: WidthType.PERCENTAGE },
+                rows: [
+                  new TableRow({
+                    children: [
+                      new TableCell({ 
+                        children: [new Paragraph({ children: [new TextRun({ text: `SESIÓN ${s.numero}: ${s.titulo}`, bold: true, color: "FFFFFF" })] })],
+                        shading: { fill: "334155", type: ShadingType.CLEAR },
+                        columnSpan: 2
+                      })
+                    ]
+                  }),
+                  new TableRow({
+                    children: [
+                      new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Inicio", bold: true })] })], width: { size: 25, type: WidthType.PERCENTAGE } }),
+                      new TableCell({ children: safeArray(s.actividades_inicio).map(a => new Paragraph({ text: `• ${a}`, spacing: { after: 50 } })) })
+                    ]
+                  }),
+                  new TableRow({
+                    children: [
+                      new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Desarrollo", bold: true })] })] }),
+                      new TableCell({ children: safeArray(s.actividades_desarrollo).map(a => new Paragraph({ text: `• ${a}`, spacing: { after: 50 } })) })
+                    ]
+                  }),
+                  new TableRow({
+                    children: [
+                      new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Cierre", bold: true })] })] }),
+                      new TableCell({ children: safeArray(s.actividades_cierre).map(a => new Paragraph({ text: `• ${a}`, spacing: { after: 50 } })) })
+                    ]
+                  }),
+                  new TableRow({
+                    children: [
+                      new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Recursos y Evaluación", bold: true })] })] }),
+                      new TableCell({ 
+                        children: [
+                          new Paragraph({ children: [new TextRun({ text: "Recursos: ", bold: true }), new TextRun({ text: safeArray(s.recursos).join(", ") })] }),
+                          new Paragraph({ children: [new TextRun({ text: "Evaluación/Evidencia: ", bold: true }), new TextRun({ text: safeStr(s.evaluacion_sesion) })] })
+                        ] 
+                      })
+                    ]
+                  })
+                ],
+                spacing: { after: 200 }
+              }))
             ]),
+
+            // EVALUACIÓN FORMATIVA
             new Paragraph({ text: "EVALUACIÓN FORMATIVA", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 200 } }),
             new Table({
               width: { size: 100, type: WidthType.PERCENTAGE },
@@ -144,13 +204,25 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
                 }),
               ],
             }),
+
+            // BIBLIOGRAFÍA
             ...(safeArray(plan.bibliografia_especializada).length > 0 ? [
               new Paragraph({ text: "BIBLIOGRAFÍA Y REFERENCIAS", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 200 } }),
-              ...safeArray(plan.bibliografia_especializada).map(b => new Paragraph({ children: [new TextRun({ text: `${safeStr(b.autor)} (${safeStr(b.año)}). `, bold: true }), new TextRun({ text: `"${safeStr(b.titulo)}". `, italics: true }), new TextRun({ text: `Uso: ${safeStr(b.uso)}` })], spacing: { after: 100 } }))
+              ...safeArray(plan.bibliografia_especializada).map(b => 
+                new Paragraph({ 
+                  children: [
+                    new TextRun({ text: `${safeStr(b.autor)} (${safeStr(b.año)}). `, bold: true }),
+                    new TextRun({ text: `"${safeStr(b.titulo)}". `, italics: true }),
+                    new TextRun({ text: `Uso: ${safeStr(b.uso)}` })
+                  ],
+                  spacing: { after: 100 }
+                })
+              )
             ] : []),
           ],
         }],
       });
+
       const blob = await Packer.toBlob(doc);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -158,7 +230,11 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
       a.download = `Planeacion_NEM_${plan.titulo_proyecto.replace(/\s+/g, '_')}.docx`;
       a.click();
       window.URL.revokeObjectURL(url);
-    } catch (err) { console.error(err); } finally { setIsExportingWord(false); }
+    } catch (err) {
+      console.error("Error al exportar Word:", err);
+    } finally {
+      setIsExportingWord(false);
+    }
   };
 
   const exportToPDF = async () => {
@@ -187,7 +263,7 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
 
       let currentY = 50;
 
-      // Diagnóstico (Usando tabla para evitar solapamiento)
+      // Diagnóstico
       autoTable(doc, {
         startY: currentY,
         head: [['DIAGNÓSTICO SOCIOEDUCATIVO']],
@@ -236,7 +312,6 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
       safeArray(plan.fases_desarrollo).forEach((fase, fIdx) => {
         if (currentY > 260) { doc.addPage(); currentY = 20; }
         
-        // Título de la Fase
         autoTable(doc, {
           startY: currentY,
           body: [[{ content: `${fIdx + 1}. ${safeStr(fase.nombre).toUpperCase()}`, styles: { fontStyle: 'bold', fillColor: [238, 242, 255], textColor: primaryColor, fontSize: 10 } }]],
@@ -245,7 +320,6 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
         });
         currentY = (doc as any).lastAutoTable.finalY;
 
-        // Sesiones de la Fase
         const sessionRows = safeArray(fase.sesiones).map(s => [
           { content: `S${s.numero}\n${s.duracion}`, styles: { halign: 'center', fontStyle: 'bold' } },
           `TÍTULO: ${s.titulo}\n\nINICIO:\n${safeArray(s.actividades_inicio).map(a => '• '+a).join('\n')}\n\nDESARROLLO:\n${safeArray(s.actividades_desarrollo).map(a => '• '+a).join('\n')}\n\nCIERRE:\n${safeArray(s.actividades_cierre).map(a => '• '+a).join('\n')}\n\nRECURSOS: ${safeArray(s.recursos).join(', ')}\nEVIDENCIA: ${s.evaluacion_sesion}`
@@ -296,7 +370,6 @@ const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
         });
       }
 
-      // Numeración de páginas
       const totalPages = doc.internal.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);

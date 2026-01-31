@@ -1,7 +1,22 @@
 
 import React, { useState } from 'react';
-import { LessonPlan, ContentPdaPair, Evaluation, Session } from '../types.ts';
-import { Download, GraduationCap, Clock, Sparkles, CheckCircle2, Loader2, BookOpen, Layers, Bookmark, User, Target, ClipboardList, School, AlertTriangle, Quote, ShieldCheck, Zap, Briefcase, BookMarked, Globe, Building2, Map } from 'lucide-react';
+import { LessonPlan, Session } from '../types.ts';
+import { 
+  Download, 
+  Clock, 
+  CheckCircle2, 
+  Loader2, 
+  Layers, 
+  User, 
+  ClipboardList, 
+  School, 
+  ShieldCheck, 
+  Zap, 
+  Briefcase, 
+  Calendar,
+  ChevronDown,
+  Info
+} from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -11,399 +26,365 @@ interface Props {
 
 const LessonPlanPreview: React.FC<Props> = ({ plan }) => {
   const [isExporting, setIsExporting] = useState(false);
-  const [exportError, setExportError] = useState<string | null>(null);
-
-  if (!plan || typeof plan !== 'object' || !plan.titulo_proyecto) {
-    return (
-      <div className="bg-slate-800 border border-amber-500/50 p-12 rounded-[3rem] text-center max-w-2xl mx-auto shadow-2xl">
-        <AlertTriangle className="w-16 h-16 text-amber-500 mx-auto mb-6" />
-        <h3 className="text-2xl font-black text-white mb-4">Validando Plano Didáctico</h3>
-        <p className="text-slate-400 font-medium">Estamos preparando los datos para su visualización...</p>
-      </div>
-    );
-  }
 
   const safeArray = (arr: any): any[] => Array.isArray(arr) ? arr : [];
 
-  const vinculacion = safeArray(plan.vinculacion_contenido_pda);
-  const fases = safeArray(plan.fases_desarrollo);
-  const bibliografia = safeArray(plan.bibliografia_especializada);
-  const ejes = safeArray(plan.ejes_articuladores);
-  const campos = safeArray(plan.campo_formativo);
-  const evaluacion = plan.evaluacion_formativa || { tecnicas: [], instrumentos: [], criterios_evaluacion: [] };
-
-  const groupedByAsignatura = vinculacion.reduce((acc: Record<string, any[]>, curr) => {
-    const key = curr?.asignatura || "Campo Formativo";
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(curr);
-    return acc;
-  }, {} as Record<string, any[]>);
-
   const exportToPDF = async () => {
-    setExportError(null);
     setIsExporting(true);
-    
     try {
       const doc = new jsPDF('p', 'mm', 'a4');
       const pageWidth = doc.internal.pageSize.getWidth();
-      const margin = 18;
-      const primaryColor = [15, 23, 42] as [number, number, number]; // Slate 900
+      const margin = 15;
+
+      // Banner Superior de Color (Degradado sim/sim en PDF es via rects)
+      doc.setFillColor(79, 70, 229); // Brand 600
+      doc.rect(0, 0, pageWidth, 50, 'F');
       
-      // HEADER DESIGN
-      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.rect(0, 0, pageWidth, 55, 'F');
-      
+      // Detalles Blancos sobre Color
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(14);
+      doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
-      doc.text(plan.nombre_escuela.toUpperCase(), margin, 16);
+      doc.text(plan.nombre_escuela.toUpperCase(), margin, 18);
       
       doc.setFontSize(8);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(200, 200, 200);
-      doc.text(`C.C.T: ${plan.cct || 'N/A'}  |  ZONA ESCOLAR: ${plan.zona_escolar || 'N/A'}`, margin, 22);
-      doc.text("SUBSECRETARÍA DE EDUCACIÓN BÁSICA | PLANO DIDÁCTICO (NEM)", margin, 27);
+      doc.text(`CCT: ${plan.cct || 'N/A'} | ZONA: ${plan.zona_escolar || 'N/A'} | DOCENTE: ${plan.nombre_docente.toUpperCase()}`, margin, 24);
       
-      doc.setFontSize(9);
-      doc.setTextColor(255, 255, 255);
-      doc.text(`DOCENTE: ${plan.nombre_docente.toUpperCase()}`, margin, 35);
-      doc.text(`${plan.grado} | ${plan.fase_nem} | METODOLOGÍA: ${plan.metodologia.toUpperCase()}`, margin, 40);
-      
-      // PROYECTO TITLE - WRAPPED TO PREVENT OVERFLOW
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(255, 255, 255);
-      const splitTitle = doc.splitTextToSize(`PROYECTO: ${plan.titulo_proyecto.toUpperCase()}`, pageWidth - (margin * 2.5));
-      doc.text(splitTitle, margin, 48);
-      
-      let currentY = 62;
-
-      // I. FUNDAMENTACIÓN
-      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       doc.setFontSize(10);
-      doc.text("I. FUNDAMENTACIÓN Y CONTEXTO", margin, currentY);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${plan.grado.toUpperCase()} - ${plan.fase_nem.toUpperCase()} | METODOLOGÍA: ${plan.metodologia.toUpperCase()}`, margin, 32);
+
+      doc.setFontSize(14);
+      const titleLines = doc.splitTextToSize(`PROYECTO: ${plan.titulo_proyecto}`, pageWidth - 30);
+      doc.text(titleLines, margin, 42);
+
+      let currentY = 58;
+
+      // Diagnóstico y Propósito con Acentos de Color
+      doc.setFillColor(248, 250, 252); // Bg slate 50
+      doc.rect(margin, currentY, pageWidth - 30, 25, 'F');
       
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text("SITUACIÓN PROBLEMÁTICA", margin + 5, currentY + 7);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      const diagLines = doc.splitTextToSize(plan.diagnostico_socioeducativo, pageWidth - 45);
+      doc.text(diagLines, margin + 5, currentY + 12);
+      
+      currentY += 35;
+
+      // Tablas de Estructura Curricular
       autoTable(doc, {
-        startY: currentY + 3,
+        startY: currentY,
         margin: { left: margin, right: margin },
+        headStyles: { fillColor: [79, 70, 229], fontSize: 9, halign: 'center' },
         body: [
-          ["DIAGNÓSTICO", plan.diagnostico_socioeducativo],
-          ["PROPÓSITO", plan.proposito],
-          ["CAMPOS", campos.join(' | ')],
-          ["EJES", ejes.join(' | ')]
+          ["CAMPOS FORMATIVOS", safeArray(plan.campo_formativo).join(', ')],
+          ["EJES ARTICULADORES", safeArray(plan.ejes_articuladores).join(', ')],
+          ["PROPÓSITO", plan.proposito]
         ],
         theme: 'grid',
-        styles: { fontSize: 8, cellPadding: 2.5, font: 'helvetica' },
-        columnStyles: { 0: { fontStyle: 'bold', width: 35, fillColor: [241, 245, 249] } }
+        styles: { fontSize: 8, cellPadding: 4, font: 'helvetica' },
+        columnStyles: { 0: { fontStyle: 'bold', width: 40, fillColor: [238, 242, 255] } }
       });
-      currentY = (doc as any).lastAutoTable.finalY + 10;
 
-      // II. MALLA CURRICULAR
-      doc.text("II. MALLA CURRICULAR VINCULADA", margin, currentY);
-      currentY += 4;
-      
-      Object.entries(groupedByAsignatura).forEach(([asig, items]) => {
+      currentY = (doc as any).lastAutoTable.finalY + 12;
+
+      // Fases y Sesiones
+      safeArray(plan.fases_desarrollo).forEach((f) => {
+        if (currentY > 240) { doc.addPage(); currentY = 20; }
+        
+        doc.setFillColor(243, 244, 246);
+        doc.rect(margin, currentY - 5, pageWidth - 30, 10, 'F');
+        doc.setTextColor(67, 56, 202); // Indigo 700
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text(f.nombre.toUpperCase(), margin + 5, currentY + 2);
+        currentY += 12;
+
         autoTable(doc, {
           startY: currentY,
           margin: { left: margin, right: margin },
-          head: [[{ content: asig.toUpperCase(), colSpan: 2, styles: { fillColor: [51, 65, 85] } }]],
-          body: (items as any[]).flatMap(pair => {
-            const pdas = safeArray(pair.pda_vinculados);
-            return pdas.map((pda, i) => [
-              i === 0 ? pair.contenido : "",
-              `• ${pda}`
-            ]);
-          }),
-          theme: 'grid',
-          styles: { fontSize: 7.5, cellPadding: 2 },
-          columnStyles: { 0: { fontStyle: 'bold', width: 55, fillColor: [250, 250, 250] } }
-        });
-        currentY = (doc as any).lastAutoTable.finalY + 6;
-        if (currentY > 265) { doc.addPage(); currentY = 20; }
-      });
-
-      // III. SECUENCIA DIDÁCTICA
-      doc.addPage();
-      currentY = 20;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text("III. PLANO DIDÁCTICO (ACTIVIDADES)", margin, currentY);
-      currentY += 6;
-      
-      fases.forEach((f) => {
-        autoTable(doc, {
-          startY: currentY,
-          margin: { left: margin, right: margin },
-          head: [[{ content: f.nombre.toUpperCase(), colSpan: 2, styles: { fillColor: primaryColor, halign: 'left' } }]],
+          headStyles: { fillColor: [99, 102, 241], fontSize: 8 }, // Accent indigo
           body: safeArray(f.sesiones).map((s: Session) => [
-            { content: `SESIÓN ${s.numero}\n${s.duracion}`, styles: { halign: 'center', fontStyle: 'bold', fontSize: 7 } },
-            `TÍTULO: ${s.titulo.toUpperCase()}\n\n` +
-            `• INICIO: ${safeArray(s.actividades_inicio).join(' ')}\n\n` +
-            `• DESARROLLO: ${safeArray(s.actividades_desarrollo).join(' ')}\n\n` +
-            `• CIERRE: ${safeArray(s.actividades_cierre).join(' ')}\n\n` +
-            `RECURSOS: ${safeArray(s.recursos).join(', ')}\n` +
-            `EVALUACIÓN: ${s.evaluacion_sesion}`
+            `S${s.numero}`,
+            `${s.titulo}\n\nInicio: ${safeArray(s.actividades_inicio).join(' ')}\nDesarrollo: ${safeArray(s.actividades_desarrollo).join(' ')}\nCierre: ${safeArray(s.actividades_cierre).join(' ')}\n\nRecursos: ${safeArray(s.recursos).join(', ')}`
           ]),
           theme: 'grid',
-          styles: { fontSize: 7, cellPadding: 3, overflow: 'linebreak' },
-          columnStyles: { 0: { width: 20 } },
-          headStyles: { textColor: [255, 255, 255] }
+          styles: { fontSize: 7, cellPadding: 5 },
+          columnStyles: { 0: { width: 15, fontStyle: 'bold', halign: 'center', fillColor: [249, 250, 251] } }
         });
-        currentY = (doc as any).lastAutoTable.finalY + 8;
-        if (currentY > 250) { doc.addPage(); currentY = 20; }
+        currentY = (doc as any).lastAutoTable.finalY + 15;
       });
 
-      // IV. EVALUACIÓN Y CIERRE
-      if (currentY > 230) { doc.addPage(); currentY = 20; }
-      doc.setFontSize(10);
-      doc.text("IV. EVALUACIÓN Y BIBLIOGRAFÍA", margin, currentY);
-      
-      autoTable(doc, {
-        startY: currentY + 4,
-        margin: { left: margin, right: margin },
-        head: [['TÉCNICAS', 'INSTRUMENTOS', 'CRITERIOS']],
-        body: [[
-          safeArray(evaluacion.tecnicas).join('\n'),
-          safeArray(evaluacion.instrumentos).join('\n'),
-          safeArray(evaluacion.criterios_evaluacion).join('\n')
-        ]],
-        theme: 'grid',
-        styles: { fontSize: 7.5 },
-        headStyles: { fillColor: [51, 65, 85] }
-      });
-      
-      // Page numbering
-      const totalPages = (doc as any).internal.getNumberOfPages();
-      for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        doc.setFontSize(7);
-        doc.setTextColor(150);
-        doc.text(`Hoja ${i} de ${totalPages} | Planeador Maestro NEM Pro+`, pageWidth / 2, 287, { align: 'center' });
-      }
-
-      doc.save(`Planeacion_NEM_${plan.titulo_proyecto.substring(0,15).replace(/\s+/g, '_')}.pdf`);
+      doc.save(`Proyecto_NEM_${plan.titulo_proyecto.substring(0,25)}.pdf`);
     } catch (err) {
-      setExportError("Error al generar PDF.");
+      console.error(err);
     } finally {
       setIsExporting(false);
     }
   };
 
   return (
-    <div className="space-y-16 animate-in fade-in slide-in-from-bottom-10 duration-1000 pb-20">
-      {/* Visualización de Cabecera */}
-      <div className="bg-slate-800/95 border border-white/10 p-12 lg:p-16 rounded-[4rem] shadow-3xl backdrop-blur-3xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-5">
-          <Globe className="w-80 h-80 text-white" />
-        </div>
-        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
-          <div className="flex-1 space-y-8 text-center lg:text-left">
-            <div className="flex flex-wrap justify-center lg:justify-start gap-3">
-              <span className="bg-indigo-600 text-white px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-indigo-400/30">
-                {plan.metodologia}
-              </span>
-              <span className="bg-slate-700/50 text-slate-300 border border-white/10 px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest">
-                Fase {plan.fase_nem}
-              </span>
+    <div className="max-w-4xl mx-auto space-y-16">
+      {/* Cabecera de Visor Editorial */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-10 pb-12 border-b-2 border-slate-100 relative">
+        <div className="absolute -top-10 left-0 text-[120px] font-black text-slate-50 opacity-[0.03] select-none uppercase pointer-events-none">Proyecto</div>
+        <div className="space-y-6 text-center md:text-left relative z-10">
+          <div className="flex flex-wrap justify-center md:justify-start gap-3">
+            <span className="bg-brand-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-brand-100">
+              {plan.metodologia}
+            </span>
+            <span className="bg-emerald-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-100">
+              Fase {plan.fase_nem}
+            </span>
+          </div>
+          <h2 className="text-5xl font-black text-slate-900 leading-tight tracking-tighter">
+            {plan.titulo_proyecto}
+          </h2>
+          <div className="flex flex-wrap justify-center md:justify-start gap-8">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center border border-white shadow-inner">
+                <User className="w-5 h-5 text-brand-600" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Docente</p>
+                <span className="text-sm font-black text-slate-800">{plan.nombre_docente}</span>
+              </div>
             </div>
-            <h2 className="text-4xl lg:text-7xl font-black text-white tracking-tighter leading-[1.1]">{plan.titulo_proyecto}</h2>
-            <div className="flex flex-wrap justify-center lg:justify-start gap-6">
-              <div className="flex items-center gap-3">
-                <User className="w-5 h-5 text-indigo-400" />
-                <span className="text-xs font-bold text-slate-300">{plan.nombre_docente}</span>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center border border-white shadow-inner">
+                <School className="w-5 h-5 text-emerald-600" />
               </div>
-              <div className="flex items-center gap-3">
-                <School className="w-5 h-5 text-indigo-400" />
-                <span className="text-xs font-bold text-slate-300 truncate max-w-[200px]">{plan.nombre_escuela}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Building2 className="w-5 h-5 text-indigo-400" />
-                <span className="text-xs font-bold text-slate-300">CCT: {plan.cct || 'S/C'}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Map className="w-5 h-5 text-indigo-400" />
-                <span className="text-xs font-bold text-slate-300">Zona: {plan.zona_escolar || 'S/Z'}</span>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Institución</p>
+                <span className="text-sm font-black text-slate-800">{plan.nombre_escuela}</span>
               </div>
             </div>
           </div>
-          <button 
-            onClick={exportToPDF} 
-            disabled={isExporting}
-            className="group flex flex-col items-center justify-center gap-4 bg-indigo-600 hover:bg-indigo-500 text-white w-full lg:w-56 h-56 rounded-[4rem] font-black transition-all shadow-indigo-600/40 shadow-2xl active:scale-95 disabled:bg-slate-700"
-          >
-            {isExporting ? <Loader2 className="w-12 h-12 animate-spin" /> : <Download className="w-12 h-12" />}
-            <div className="text-center">
-              <p className="text-[12px] uppercase tracking-widest mb-1">Descargar</p>
-              <p className="text-[9px] opacity-70">PLANO DIDÁCTICO</p>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      {/* Resumen Curricular: Campos y Ejes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-slate-800/40 border border-white/5 p-12 rounded-[3.5rem] backdrop-blur-xl">
-          <h3 className="text-[11px] font-black text-indigo-400 flex items-center gap-4 mb-8 uppercase tracking-[0.4em]">
-            <Layers className="w-6 h-6" /> Campos Formativos
-          </h3>
-          <div className="flex flex-wrap gap-3">
-            {campos.map((c, i) => (
-              <div key={i} className="bg-indigo-500/10 border border-indigo-500/20 px-6 py-3 rounded-2xl text-xs font-bold text-indigo-300 flex items-center gap-3">
-                <Zap className="w-4 h-4" /> {c}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="bg-slate-800/40 border border-white/5 p-12 rounded-[3.5rem] backdrop-blur-xl">
-          <h3 className="text-[11px] font-black text-emerald-400 flex items-center gap-4 mb-8 uppercase tracking-[0.4em]">
-            <Briefcase className="w-6 h-6" /> Ejes Articuladores
-          </h3>
-          <div className="flex flex-wrap gap-3">
-            {ejes.map((e, i) => (
-              <div key={i} className="bg-emerald-500/10 border border-emerald-500/20 px-6 py-3 rounded-2xl text-xs font-bold text-emerald-300 flex items-center gap-3">
-                <ShieldCheck className="w-4 h-4" /> {e}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Secuencia Didáctica - DISEÑO VERTICAL MEJORADO */}
-      <div className="space-y-12">
-        <div className="flex items-center gap-8 px-8">
-           <h3 className="text-xl font-black text-white uppercase tracking-[0.3em]">Desarrollo del Plano Didáctico</h3>
-           <div className="h-px bg-white/10 flex-1" />
         </div>
         
-        {fases.map((fase, i) => (
-          <div key={i} className="bg-slate-800/20 border border-white/5 rounded-[4rem] p-12 lg:p-20 relative overflow-hidden">
-            <div className="mb-16 relative z-10">
-              <div className="inline-flex items-center gap-3 bg-indigo-600/20 border border-indigo-600/40 px-8 py-3 rounded-3xl mb-8">
-                <span className="text-[12px] font-black text-indigo-400 uppercase tracking-widest">{fase?.nombre}</span>
-              </div>
-              <p className="text-slate-400 text-xl font-medium leading-relaxed italic max-w-4xl border-l-4 border-indigo-600 pl-8">{fase?.descripcion}</p>
+        <button 
+          onClick={exportToPDF}
+          disabled={isExporting}
+          className="group relative bg-slate-900 hover:bg-brand-600 text-white p-1 rounded-[2rem] transition-all hover:scale-105 shadow-2xl shadow-slate-200"
+        >
+          <div className="bg-slate-900 group-hover:bg-brand-600 px-10 py-8 rounded-[1.8rem] flex flex-col items-center gap-2 border border-white/10 transition-colors">
+            {isExporting ? <Loader2 className="w-7 h-7 animate-spin" /> : <Download className="w-7 h-7" />}
+            <span className="text-[11px] font-black uppercase tracking-[0.3em]">Exportar PDF</span>
+          </div>
+        </button>
+      </div>
+
+      {/* Grid de Resumen Pedagógico con Color */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="bg-indigo-50/50 p-8 rounded-[2.5rem] border border-indigo-100 hover:bg-indigo-50 transition-colors">
+          <div className="flex items-center gap-3 mb-6 text-indigo-600">
+            <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+              <Layers className="w-5 h-5" />
             </div>
-            
-            <div className="space-y-12 relative z-10">
-              {safeArray(fase?.sesiones).map((s, si) => (
-                <div key={si} className="bg-slate-900/40 p-12 rounded-[4rem] border border-white/5 hover:border-indigo-600/30 transition-all shadow-xl group">
-                  <div className="flex flex-col lg:flex-row items-start lg:items-center gap-10 mb-12 border-b border-white/5 pb-10">
-                    <div className="bg-indigo-600 text-white w-24 h-24 rounded-[2.5rem] flex flex-col items-center justify-center font-black shadow-lg shrink-0">
-                      <span className="text-[10px] opacity-70">SESIÓN</span>
-                      <span className="text-4xl">{s?.numero}</span>
-                    </div>
-                    <div className="flex-1">
-                      <h5 className="text-3xl font-black text-white tracking-tight leading-none mb-4">{s?.titulo || 'Actividad de Aprendizaje'}</h5>
-                      <div className="flex gap-6">
-                        <span className="text-[11px] text-slate-500 font-bold uppercase flex items-center gap-2"><Clock className="w-4 h-4" /> {s?.duracion}</span>
-                        <span className="text-[11px] text-indigo-400 font-bold uppercase flex items-center gap-2"><Zap className="w-4 h-4" /> {s?.evaluacion_sesion}</span>
-                      </div>
-                    </div>
+            <h4 className="text-[11px] font-black uppercase tracking-[0.2em]">Campos Formativos</h4>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {safeArray(plan.campo_formativo).map((c, i) => (
+              <span key={i} className="text-[10px] font-black text-indigo-700 bg-white px-4 py-2 rounded-xl border border-indigo-100 shadow-sm">{c}</span>
+            ))}
+          </div>
+        </div>
+        
+        <div className="bg-emerald-50/50 p-8 rounded-[2.5rem] border border-emerald-100 hover:bg-emerald-50 transition-colors">
+          <div className="flex items-center gap-3 mb-6 text-emerald-600">
+            <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <h4 className="text-[11px] font-black uppercase tracking-[0.2em]">Ejes Articuladores</h4>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {safeArray(plan.ejes_articuladores).map((e, i) => (
+              <span key={i} className="text-[10px] font-black text-emerald-700 bg-white px-4 py-2 rounded-xl border border-emerald-100 shadow-sm">{e}</span>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-amber-50/50 p-8 rounded-[2.5rem] border border-amber-100 hover:bg-amber-50 transition-colors">
+          <div className="flex items-center gap-3 mb-6 text-amber-600">
+            <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+              <Calendar className="w-5 h-5" />
+            </div>
+            <h4 className="text-[11px] font-black uppercase tracking-[0.2em]">Propósito Situado</h4>
+          </div>
+          <p className="text-xs font-bold text-amber-800 leading-relaxed italic">"{plan.proposito}"</p>
+        </div>
+      </div>
+
+      {/* Secuencia Didáctica - Estilo Editorial Colorido */}
+      <div className="space-y-12">
+        <div className="flex items-center gap-6">
+          <div className="bg-brand-50 px-4 py-2 rounded-xl border border-brand-100">
+             <h3 className="text-lg font-black text-brand-600 tracking-tight uppercase tracking-widest">Plan de Acción</h3>
+          </div>
+          <div className="h-px bg-slate-100 flex-1"></div>
+        </div>
+
+        {safeArray(plan.fases_desarrollo).map((fase, i) => (
+          <div key={i} className="group">
+            <div className="bg-white border-2 border-slate-100 rounded-[3rem] overflow-hidden shadow-2xl shadow-slate-100 hover:border-brand-200 transition-all duration-500">
+              <div className="bg-gradient-to-r from-slate-50 to-white px-10 py-8 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                     <div className="w-2 h-8 bg-brand-500 rounded-full"></div>
+                     <h4 className="text-sm font-black text-brand-600 uppercase tracking-[0.3em]">{fase.nombre}</h4>
                   </div>
-                  
-                  {/* Grid de Actividades con mejor legibilidad */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3 border-b border-emerald-500/20 pb-4">
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                        <span className="text-[11px] font-black text-emerald-500 uppercase tracking-widest">Inicio / Apertura</span>
-                      </div>
-                      <div className="space-y-4">
-                        {safeArray(s?.actividades_inicio).map((a, ai) => (
-                          <div key={ai} className="flex gap-4 group/item">
-                            <span className="text-emerald-500 font-black">•</span>
-                            <p className="text-[14px] text-slate-400 leading-relaxed font-medium">{a}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-6 bg-indigo-600/5 p-8 rounded-[3rem] border border-indigo-600/10">
-                      <div className="flex items-center gap-3 border-b border-indigo-400/20 pb-4">
-                        <div className="w-2 h-2 bg-indigo-400 rounded-full" />
-                        <span className="text-[11px] font-black text-indigo-400 uppercase tracking-widest">Desarrollo</span>
-                      </div>
-                      <div className="space-y-4">
-                        {safeArray(s?.actividades_desarrollo).map((a, ai) => (
-                          <div key={ai} className="flex gap-4">
-                            <span className="text-indigo-400 font-black">•</span>
-                            <p className="text-[14px] text-slate-200 font-bold leading-relaxed">{a}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3 border-b border-amber-500/20 pb-4">
-                        <div className="w-2 h-2 bg-amber-500 rounded-full" />
-                        <span className="text-[11px] font-black text-amber-500 uppercase tracking-widest">Cierre / Evaluación</span>
-                      </div>
-                      <div className="space-y-4">
-                        {safeArray(s?.actividades_cierre).map((a, ai) => (
-                          <div key={ai} className="flex gap-4">
-                            <span className="text-amber-500 font-black">•</span>
-                            <p className="text-[14px] text-slate-400 leading-relaxed font-medium">{a}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-12 pt-8 border-t border-white/5 flex flex-wrap gap-6">
-                    <div className="flex items-center gap-3">
-                      <Briefcase className="w-5 h-5 text-indigo-400" />
-                      <span className="text-[11px] font-bold text-slate-500 uppercase">Recursos:</span>
-                      <div className="flex flex-wrap gap-2">
-                         {safeArray(s?.recursos).map((r, ri) => (
-                           <span key={ri} className="bg-white/5 px-4 py-1.5 rounded-xl text-[10px] font-bold text-slate-300 border border-white/5">{r}</span>
-                         ))}
-                      </div>
-                    </div>
-                  </div>
+                  <p className="text-sm font-bold text-slate-500 max-w-2xl leading-relaxed">{fase.descripcion}</p>
                 </div>
-              ))}
+                <div className="hidden md:flex flex-col items-end">
+                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Estado</span>
+                  <span className="text-[11px] font-black text-emerald-500 uppercase flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Estructurado
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-0 divide-y divide-slate-50">
+                {safeArray(fase.sesiones).map((s, si) => (
+                  <div key={si} className="p-10 hover:bg-brand-50/10 transition-all duration-300">
+                    <div className="flex flex-col lg:flex-row gap-12">
+                      <div className="lg:w-20 flex-shrink-0 flex flex-col items-center">
+                        <div className="bg-brand-600 text-white w-20 h-20 rounded-[1.8rem] flex flex-col items-center justify-center shadow-xl shadow-brand-100 relative group-hover:rotate-6 transition-transform">
+                          <span className="text-[10px] font-black opacity-60">S-</span>
+                          <span className="text-3xl font-black">{s.numero}</span>
+                          <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-xl border-4 border-white flex items-center justify-center text-[10px] font-black">
+                            <Zap className="w-3 h-3 fill-white" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1 space-y-10">
+                        <div>
+                          <div className="flex items-center gap-4 mb-3">
+                             <h5 className="text-2xl font-black text-slate-900 tracking-tight leading-none">{s.titulo}</h5>
+                          </div>
+                          <div className="flex flex-wrap gap-4">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 bg-slate-50 px-3 py-1 rounded-lg">
+                              <Clock className="w-4 h-4 text-brand-400" /> {s.duracion}
+                            </span>
+                            <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest flex items-center gap-2 bg-brand-50 px-3 py-1 rounded-lg border border-brand-100">
+                              <Info className="w-4 h-4" /> {s.evaluacion_sesion}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+                          <div className="absolute top-0 left-1/3 bottom-0 w-px bg-slate-50 hidden md:block"></div>
+                          <div className="absolute top-0 left-2/3 bottom-0 w-px bg-slate-50 hidden md:block"></div>
+                          
+                          <div className="space-y-4">
+                            <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] block">Apertura</span>
+                            <ul className="space-y-3">
+                              {safeArray(s.actividades_inicio).map((act, ai) => (
+                                <li key={ai} className="text-xs font-bold text-slate-600 leading-relaxed flex gap-3">
+                                  <span className="text-indigo-300">▸</span> {act}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em] block">Desarrollo</span>
+                            <ul className="space-y-3">
+                              {safeArray(s.actividades_desarrollo).map((act, ai) => (
+                                <li key={ai} className="text-xs font-black text-slate-800 leading-relaxed flex gap-3">
+                                  <span className="text-emerald-400">▸</span> {act}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.3em] block">Cierre</span>
+                            <ul className="space-y-3">
+                              {safeArray(s.actividades_cierre).map((act, ai) => (
+                                <li key={ai} className="text-xs font-bold text-slate-600 leading-relaxed flex gap-3">
+                                  <span className="text-amber-400">▸</span> {act}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+
+                        <div className="pt-8 border-t border-slate-50 flex flex-wrap items-center gap-6">
+                           <div className="flex items-center gap-2">
+                             <Briefcase className="w-4 h-4 text-slate-300" />
+                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recursos:</span>
+                           </div>
+                           <div className="flex flex-wrap gap-2">
+                            {safeArray(s.recursos).map((rec, ri) => (
+                              <span key={ri} className="text-[10px] font-black text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-xl shadow-sm hover:border-brand-300 transition-colors cursor-default">{rec}</span>
+                            ))}
+                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Evaluación Formativa Final */}
-      <div className="bg-indigo-600/10 border border-indigo-600/20 p-16 rounded-[4rem] shadow-2xl">
-         <h3 className="text-[12px] font-black text-indigo-400 uppercase tracking-[0.4em] mb-12 flex items-center gap-4">
-            <ClipboardList className="w-8 h-8" /> Sistema de Evaluación Formativa
-         </h3>
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <div className="space-y-6">
-              <span className="text-[10px] text-slate-500 uppercase font-black block tracking-widest">Técnicas</span>
-              <ul className="space-y-3">
-                {safeArray(evaluacion.tecnicas).map((t, i) => (
-                  <li key={i} className="text-white font-bold text-sm flex items-center gap-3">
-                    <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full" /> {t}
-                  </li>
-                ))}
-              </ul>
+      {/* Evaluación Formativa Premium */}
+      <div className="bg-gradient-to-br from-slate-900 to-brand-900 rounded-[3.5rem] p-16 text-white shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500 rounded-full -mr-32 -mt-32 opacity-10 blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500 rounded-full -ml-32 -mb-32 opacity-10 blur-3xl"></div>
+        
+        <div className="flex items-center gap-6 mb-16 relative z-10">
+          <div className="bg-white/10 p-4 rounded-3xl backdrop-blur-xl border border-white/20">
+            <ClipboardList className="w-8 h-8 text-brand-400" />
+          </div>
+          <div>
+            <h3 className="text-3xl font-black tracking-tight">Estrategia de Evaluación</h3>
+            <p className="text-brand-300 text-xs font-black uppercase tracking-[0.3em] mt-1">Nivel Formativo NEM</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 relative z-10">
+          <div className="space-y-8 group">
+            <h5 className="text-[11px] font-black text-brand-400 uppercase tracking-[0.4em] border-b border-white/10 pb-4 group-hover:text-brand-300 transition-colors">Técnicas</h5>
+            <div className="space-y-4">
+              {safeArray(plan.evaluacion_formativa?.tecnicas).map((t, i) => (
+                <div key={i} className="text-sm font-bold text-slate-300 flex items-center gap-4 hover:text-white transition-colors">
+                  <div className="w-2 h-2 rounded-full bg-brand-500 shadow-lg shadow-brand-500/50"></div> {t}
+                </div>
+              ))}
             </div>
-            <div className="space-y-6">
-              <span className="text-[10px] text-slate-500 uppercase font-black block tracking-widest">Instrumentos</span>
-              <ul className="space-y-3">
-                {safeArray(evaluacion.instrumentos).map((t, i) => (
-                  <li key={i} className="text-white font-bold text-sm flex items-center gap-3">
-                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" /> {t}
-                  </li>
-                ))}
-              </ul>
+          </div>
+          
+          <div className="space-y-8 group">
+            <h5 className="text-[11px] font-black text-emerald-400 uppercase tracking-[0.4em] border-b border-white/10 pb-4 group-hover:text-emerald-300 transition-colors">Instrumentos</h5>
+            <div className="space-y-4">
+              {safeArray(plan.evaluacion_formativa?.instrumentos).map((t, i) => (
+                <div key={i} className="text-sm font-bold text-slate-300 flex items-center gap-4 hover:text-white transition-colors">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></div> {t}
+                </div>
+              ))}
             </div>
-            <div className="space-y-6">
-              <span className="text-[10px] text-slate-500 uppercase font-black block tracking-widest">Criterios de Evaluación</span>
-              <ul className="space-y-3">
-                {safeArray(evaluacion.criterios_evaluacion).map((t, i) => (
-                  <li key={i} className="text-white font-bold text-sm flex items-center gap-3 italic">
-                    <CheckCircle2 className="w-4 h-4 text-indigo-400" /> {t}
-                  </li>
-                ))}
-              </ul>
+          </div>
+          
+          <div className="space-y-8 group">
+            <h5 className="text-[11px] font-black text-amber-400 uppercase tracking-[0.4em] border-b border-white/10 pb-4 group-hover:text-amber-300 transition-colors">Criterios Maestro</h5>
+            <div className="space-y-4">
+              {safeArray(plan.evaluacion_formativa?.criterios_evaluacion).map((t, i) => (
+                <div key={i} className="text-sm font-black text-white flex items-start gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all">
+                  <CheckCircle2 className="w-5 h-5 text-brand-400 shrink-0 mt-0.5" /> 
+                  <span className="leading-relaxed italic">"{t}"</span>
+                </div>
+              ))}
             </div>
-         </div>
+          </div>
+        </div>
       </div>
     </div>
   );

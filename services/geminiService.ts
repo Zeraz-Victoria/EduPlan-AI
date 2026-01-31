@@ -20,26 +20,27 @@ export const generateLessonPlanStream = async (
     1. BÚSQUEDA EXHAUSTIVA DE CONTENIDOS: Vinculación MULTIDISCIPLINARIA real de los 4 Campos Formativos.
     2. ELEMENTOS OFICIALES: Título, Propósito, Campos, Ejes, Contenidos, PDAs, Metodología, Fases, Actividades Detalladas, Evaluación Formativa y Recursos.
     3. METODOLOGÍA: Sigue las fases de: ${params.metodologia}.
-    4. TEMPORALIDAD: Desarrolla ${params.numSesiones} sesiones.
+    4. TEMPORALIDAD: Desarrolla ${params.numSesiones} sesiones completas.
+    5. CONTEXTO: Utiliza obligatoriamente la problemática proporcionada para situar el aprendizaje.
 
     REGLAS TÉCNICAS:
-    - Responde ÚNICAMENTE con JSON.
+    - Responde ÚNICAMENTE con JSON válido según el esquema solicitado.
   `;
 
   const prompt = `
     DISEÑA EL PLANO DIDÁCTICO COMPLETO:
-    - Problemática: ${params.contextoAdicional || 'Situación de aprendizaje'}
+    - Problemática Situacional: ${params.contextoAdicional || 'Situación de aprendizaje general'}
     - Grado: ${params.grado} | Fase: ${params.fase}
     - Metodología: ${params.metodologia}
-    - Sesiones: ${params.numSesiones}
+    - Número de Sesiones: ${params.numSesiones}
     - Docente: ${params.nombreDocente}
     - Escuela: ${params.nombreEscuela}
     - CCT: ${params.cct || 'N/A'}
     - Zona: ${params.zonaEscolar || 'N/A'}
 
-    Estructura JSON:
+    Estructura JSON requerida:
     {
-      "titulo_proyecto": "Título corto",
+      "titulo_proyecto": "Título corto e impactante",
       "nombre_docente": "...",
       "nombre_escuela": "...",
       "cct": "...",
@@ -47,31 +48,26 @@ export const generateLessonPlanStream = async (
       "grado": "...",
       "fase_nem": "...",
       "metodologia": "...",
-      "campo_formativo": ["..."],
-      "ejes_articuladores": ["..."],
-      "proposito": "...",
-      "diagnostico_socioeducativo": "...",
-      "temporalidad_realista": "...",
+      "campo_formativo": ["Campo 1", "Campo 2"],
+      "ejes_articuladores": ["Eje 1", "Eje 2"],
+      "proposito": "Propósito pedagógico claro",
+      "diagnostico_socioeducativo": "Resumen situacional basado en la problemática",
+      "temporalidad_realista": "Estimación de tiempo",
       "vinculacion_contenido_pda": [{ "asignatura": "...", "contenido": "...", "pda_vinculados": ["..."] }],
-      "fases_desarrollo": [{ "nombre": "...", "descripcion": "...", "sesiones": [{ "numero": 1, "titulo": "...", "duracion": "...", "actividades_inicio": ["..."], "actividades_desarrollo": ["..."], "actividades_cierre": ["..."], "recursos": ["..."], "evaluacion_sesion": "..." }] }],
+      "fases_desarrollo": [{ "nombre": "Nombre de la Fase", "descripcion": "...", "sesiones": [{ "numero": 1, "titulo": "...", "duracion": "50 min", "actividades_inicio": ["..."], "actividades_desarrollo": ["..."], "actividades_cierre": ["..."], "recursos": ["..."], "evaluacion_sesion": "..." }] }],
       "evaluacion_formativa": { "tecnicas": ["..."], "instrumentos": ["..."], "criterios_evaluacion": ["..."] },
-      "bibliografia_especializada": [{ "autor": "...", "titulo": "...", "año": "2023", "uso": "Sustento" }]
+      "bibliografia_especializada": [{ "autor": "SEP", "titulo": "Plan de Estudio 2022", "año": "2022", "uso": "Marco Normativo" }]
     }
   `;
 
   try {
-    const parts: any[] = [{ text: prompt }];
-    if (params.pdfBase64) {
-      parts.push({ inlineData: { mimeType: "application/pdf", data: params.pdfBase64 } });
-    }
-
     const responseStream = await ai.models.generateContentStream({
       model: 'gemini-3-pro-preview',
-      contents: { parts },
+      contents: [{ parts: [{ text: prompt }] }],
       config: { 
         systemInstruction, 
         responseMimeType: "application/json",
-        temperature: 0.3,
+        temperature: 0.4,
         thinkingConfig: { thinkingBudget: 32000 }
       }
     });
@@ -89,13 +85,9 @@ export const generateLessonPlanStream = async (
 
   } catch (error: any) {
     console.error("Gemini API Error:", error);
-    
-    // Manejo específico de cuota excedida (Error 429)
     if (error.message?.includes("429") || error.message?.includes("RESOURCE_EXHAUSTED")) {
-      throw new Error("LÍMITE DE CUOTA EXCEDIDO: Has realizado demasiadas peticiones en poco tiempo. Por favor, espera 1 o 2 minutos antes de intentar generar una nueva planeación.");
+      throw new Error("LÍMITE DE CUOTA: Por favor espera un minuto para volver a generar.");
     }
-    
-    // Otros errores
-    throw new Error("Error en la comunicación con la IA. Por favor, verifica tu conexión o intenta con un contexto más breve.");
+    throw new Error("Error al generar la planeación. Intenta con un contexto más sencillo.");
   }
 };

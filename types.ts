@@ -1,8 +1,8 @@
 
-export type Methodology = 
-  | 'Proyectos Comunitarios' 
-  | 'Aprendizaje Basado en Indagación (STEAM)' 
-  | 'Aprendizaje Basado en Problemas (ABP)' 
+export type Methodology =
+  | 'Proyectos Comunitarios'
+  | 'Aprendizaje Basado en Indagación (STEAM)'
+  | 'Aprendizaje Basado en Problemas (ABP)'
   | 'Aprendizaje Servicio (AS)';
 
 export interface ContentPdaPair {
@@ -36,30 +36,54 @@ export interface Bibliography {
   uso: string;
 }
 
-export interface Evaluation {
-  tecnicas: string[];
-  instrumentos: string[];
-  criterios_evaluacion: string[];
+export interface Vinculacion {
+  campo: string;
+  contenido: string;
+  pdas: string[];
+}
+
+export interface Session {
+  numero: number;
+  titulo: string;
+  duracion: string;
+  inicio: string[];
+  desarrollo: string[];
+  cierre: string[];
+  recursos: string[];
+  evidencia: string;
+}
+
+export interface SecuenciaDidactica {
+  fase_nombre: string;
+  sesiones: Session[];
+}
+
+export interface NewEvaluation {
+  tecnica: string;
+  instrumento: string;
+  evidencia_proceso: string;
+  criterios: string[];
 }
 
 export interface LessonPlan {
-  titulo_proyecto: string;
-  nombre_docente: string;
-  nombre_escuela: string;
-  cct?: string;
-  zona_escolar?: string;
-  grado: string;
-  fase_nem: string;
-  metodologia: Methodology;
-  campo_formativo: string[];
-  ejes_articuladores: string[];
-  vinculacion_contenido_pda: ContentPdaPair[];
-  proposito: string;
-  diagnostico_socioeducativo: string;
-  temporalidad_realista: string;
-  fases_desarrollo: Phase[];
-  evaluacion_formativa: Evaluation;
-  bibliografia_especializada: Bibliography[];
+  encabezado: {
+    proyecto: string;
+    docente: string;
+    grado: string;
+    fase: string;
+    escuela: string;
+    metodologia: string;
+    num_sesiones: number;
+  };
+  diagnostico_pedagogico: string;
+  estructura_curricular: {
+    campos_formativos: string[];
+    ejes_articuladores: string[];
+    vinculacion: Vinculacion[];
+    proposito: string;
+  };
+  secuencia_didactica: SecuenciaDidactica[];
+  evaluacion_formativa: NewEvaluation;
 }
 
 export interface PlanningRequest {

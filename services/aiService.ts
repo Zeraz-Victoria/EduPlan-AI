@@ -1,6 +1,7 @@
 
 import OpenAI from "openai";
 import { LessonPlan, PlanningRequest } from "../types";
+import { EJES_ARTICULADORES_NEM } from "../constants";
 
 const deepseek = new OpenAI({
   baseURL: "https://api.deepseek.com",
@@ -38,11 +39,21 @@ Estructura la secuencia estrictamente según la metodología:
 - Proyectos Comunitarios (3 fases): Planeación, Acción, Intervención.
 - Aprendizaje Servicio (5 etapas): Punto de partida, Lo que sé y lo que quiero saber, Organicemos las actividades, Creatividad en marcha, Compartimos y evaluamos.
 
-# 3. REGLAS TÉCNICAS:
+# 3. REGLAS TÉCNICAS CRÍTICAS (OBLIGATORIAS — INCUMPLIRLAS ES UN ERROR GRAVE):
 - Respuesta: SOLO JSON.
 - Volumen: EXACTAMENTE ${params.numSesiones} sesiones detalladas. No resumas.
 - Contenidos: No inventes Contenidos ni PDA; usa los oficiales del programa sintético.
 - Tono: Profesional, empoderador y pedagógicamente riguroso.
+
+# 4. REGLA ABSOLUTA — EJES ARTICULADORES:
+Los ejes articuladores del campo "ejes_articuladores" en el JSON de respuesta DEBEN ser
+EXCLUSIVAMENTE una selección (entre 1 y 4) de los siguientes 7 ejes oficiales del
+Programa Sintético NEM 2022. ESTÁ ESTRICTAMENTE PROHIBIDO inventar, parafrasear,
+abreviar o modificar estos nombres:
+${EJES_ARTICULADORES_NEM.map((e, i) => `  ${i + 1}. ${e}`).join('\n')}
+
+Elige solo los ejes que sean PERTINENTES al diagnóstico y campo formativo del proyecto.
+NUNCA uses valores diferentes a los de esta lista.
   `;
 
   const userPrompt = `
@@ -53,6 +64,11 @@ Genera un proyecto de impacto social en formato JSON para:
 - Número de Sesiones: ${params.numSesiones} (Genera detalles para TODAS)
 - Problemática/Contexto: ${params.contextoAdicional || 'General'}
 - Escuela: ${params.nombreEscuela} | Docente: ${params.nombreDocente}
+
+### ⚠️ EJES ARTICULADORES VÁLIDOS (LISTA CERRADA — NO USES OTROS):
+Para el campo "ejes_articuladores" del JSON, SOLO puedes usar valores de esta lista exacta:
+${EJES_ARTICULADORES_NEM.map((e, i) => `${i + 1}. "${e}"`).join('\n')}
+Elige entre 1 y 4 ejes que sean pertinentes al diagnóstico. No modifiques ni inventes otros.
 
 ### ESTRUCTURA JSON REQUERIDA (Respetar estrictamente para compatibilidad de sistema):
 {

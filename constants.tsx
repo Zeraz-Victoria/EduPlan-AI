@@ -32,6 +32,18 @@ export const METODOLOGIAS: Methodology[] = [
   'Aprendizaje Servicio (AS)'
 ];
 
+// Los 7 ejes articuladores oficiales del Programa Sintético NEM 2022.
+// La IA SOLO puede elegir de esta lista. No puede inventar ni modificar ninguno.
+export const EJES_ARTICULADORES_NEM: string[] = [
+  "Inclusión",
+  "Pensamiento Crítico",
+  "Interculturalidad Crítica",
+  "Igualdad de Género",
+  "Vida Saludable",
+  "Apropiación de las Culturas a través de la Lectura y la Escritura",
+  "Artes y Experiencias Estéticas"
+];
+
 export const MARCO_PEDAGOGICO = {
   'Proyectos Comunitarios': {
     enfoque: 'Exploración del entorno social y resolución de problemas de la comunidad.',

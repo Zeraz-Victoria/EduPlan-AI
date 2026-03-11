@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { FASES_NEM, METODOLOGIAS, GRADOS_FLAT } from './constants';
 import { Methodology, LessonPlan } from './types';
-import { generateLessonPlanStream } from './services/aiService';
+import { generateLessonPlanStream, ProgressCallback } from './services/aiService';
 import LessonPlanPreview from './components/LessonPlanPreview';
 import {
   GraduationCap,
@@ -49,6 +49,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [lessonPlan, setLessonPlan] = useState<LessonPlan | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [batchProgress, setBatchProgress] = useState<{ currentBatch: number; totalBatches: number; text: string } | null>(null);
 
   useEffect(() => {
     let interval: any;
@@ -76,8 +77,13 @@ const App: React.FC = () => {
     setError(null);
     setLessonPlan(null);
     setIsSidebarOpen(false);
+    setBatchProgress(null);
 
     try {
+      const onProgress: ProgressCallback = (info) => {
+        setBatchProgress(info);
+      };
+
       const result = await generateLessonPlanStream(
         {
           nombreDocente,
@@ -90,7 +96,9 @@ const App: React.FC = () => {
           contextoAdicional: contexto,
           numSesiones
         },
-        () => { }
+        () => { },
+        3,
+        onProgress
       );
 
       setLessonPlan(result);
@@ -352,10 +360,28 @@ const App: React.FC = () => {
               </div>
             </div>
             <h3 className="text-2xl sm:text-3xl font-display font-black text-slate-900 mb-4 tracking-tight text-center">Arquitectura de Aprendizaje</h3>
+            {batchProgress && batchProgress.totalBatches > 1 && (
+              <div className="mb-4 w-full max-w-md">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-black text-brand-600 uppercase tracking-widest">
+                    Lote {batchProgress.currentBatch} de {batchProgress.totalBatches}
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-400">
+                    {Math.round((batchProgress.currentBatch / batchProgress.totalBatches) * 100)}%
+                  </span>
+                </div>
+                <div className="w-full bg-slate-200/50 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-gradient-brand h-full rounded-full transition-all duration-700 ease-out"
+                    style={{ width: `${(batchProgress.currentBatch / batchProgress.totalBatches) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
             <div className="bg-white/50 backdrop-blur-sm px-6 py-3 rounded-2xl border border-white/60 shadow-sm flex items-center gap-3">
               <Loader2 className="w-4 h-4 text-brand-600 animate-spin" />
               <p className="text-brand-700 text-[11px] font-black uppercase tracking-[0.25em]">
-                {LOADING_STEPS[loadingStep]}
+                {batchProgress?.text || LOADING_STEPS[loadingStep]}
               </p>
             </div>
           </div>
